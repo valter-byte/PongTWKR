@@ -1,22 +1,41 @@
 # PongTWKR
 The objective of PongTWKR is to be an easy-to-use, handy tool for tweaking CPU, RAM, and other PC components like Swappiness, governor, etc. easily, without having to confront the terminal or shady directories. Please note that this program is targeted for those that can't/don't want to mess with commands or files on their Linux Distro, but want to get overall better performance.
 
-# How to use
+# How to use?
+Well, as for 1/27/26, PongTWKR is still on early development. v0.2. It is a simple program that makes it easier to make changes/tweaks to CPU/RAM configurations, such as governor, dirty_ratio, etc. Just install (Move pongtwkr.py to /usr/local/bin, /usr/bin or any other PATH directorie) and use it by the terminal!
 
-Well. I've just uploaded v0.1. Until 1.0, PongTWKR will only work by simplifying tweaking commands on the terminal. Firstly, install the source code "pongtwkr.py" and move it to a PATH directorie (for example, /usr/local/bin) with sudo mv or with your file manager using super user perms. As for v0.1, I've only added Swappiness, Governor and Info;
-sudo pongtwkr swappiness <value>
-sudo pongtwkr governor <value> [performance, for example]
-sudo pongtwkr info
+## v0.2 commands:
 
-Please note that PongTWKR needs psutil to work correctly.
+- 'sudo pongtwkr swappiness <value>'
+  - Adjusts vm.swappiness
+- 'sudo pongtwkr governor <value>' (Generally performance or powersave)
+  - Adjusts the governor preset for your CPU.
+- 'sudo pongtwkr cpumin <value_in_ghz>'
+  - Limits the minimum frequency of your CPU in GhZ.
+- 'sudo pongtwkr cpumax <value_in_ghz>'
+  - Limits the maximum frequency of your CPU in GhZ.
+- 'sudo pongtwkr dirtyratio <value>'
+  - Adjusts vm.dirty_ratio
+- sudo pongtwkr dirtybackground <value>
+  - Adjusts vm.dirty_background_ratio
+- 'sudo pongtwkr cachepressure <value>'
+  - Adjusts vm.vfs_cache_pressure
+- 'sudo pongtwkr info'
+  - Shows a quick-info panel
+ 
+## v0.2 Changelog
+- Added dirty ratio command
+- Added dirty background ratio command
+- Added vfs cache pressure command
+- Added maximum and minimum CPU frequency command
+- Added more info + a cute design to 'sudo pongtwkr info'
 
-# If you want to help:
-
-Just tell me whatever other tweaking option should I add. That will completely help my no-creativity brain. Or send me screenshots of the bugs/errors.
-
-
-
-# Please note that PongTWKR is an ambitious project that is just starting. More and more features will be added in the (not so far) future.
+# Our objective & philosophy
+PongTWKR aims to unify Linux performance tweaks that are usually scattered across different packages.  
+Our long-term goal is to be a *modular* and *open-source* toolkit, avoiding the need to install huge “gaming packs” with hundreds of tools you’ll never use.  
+Instead, just install PongTWKR and enjoy a growing set of 150+ tweaks (future roadmap), or keep it minimal and use only what you need.
 
 
-### v0.2 tomorrow, probably adding sillier things. Bai-bai!
+# About me
+Welp, I'm just a "dev" that enjoys Linux and, when I started with it, had problems when making tweaks like this. I'll love to see how far I can get with PongTWKR.
+
