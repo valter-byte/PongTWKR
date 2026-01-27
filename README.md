@@ -2,25 +2,25 @@
 The objective of PongTWKR is to be an easy-to-use, handy tool for tweaking CPU, RAM, and other PC components like Swappiness, governor, etc. easily, without having to confront the terminal or shady directories. Please note that this program is targeted for those that can't/don't want to mess with commands or files on their Linux Distro, but want to get overall better performance.
 
 # How to use?
-Well, as for 1/27/26, PongTWKR is still on early development. v0.2. It is a simple program that makes it easier to make changes/tweaks to CPU/RAM configurations, such as governor, dirty_ratio, etc. Just install (Move pongtwkr.py to /usr/local/bin, /usr/bin or any other PATH directorie) and use it by the terminal!
+Well, as for January 27, 2026, PongTWKR is still on early development. v0.2. It is a simple program that makes it easier to make changes/tweaks to CPU/RAM configurations, such as governor, dirty_ratio, etc. Just install (Move pongtwkr.py to /usr/local/bin, /usr/bin or any other PATH directorie) and use it by the terminal!
 
 ## v0.2 commands:
 
-- 'sudo pongtwkr swappiness <value>'
+- `sudo pongtwkr swappiness <value>`
   - Adjusts vm.swappiness
-- 'sudo pongtwkr governor <value>' (Generally performance or powersave)
+- `sudo pongtwkr governor <value>` (Generally performance or powersave)
   - Adjusts the governor preset for your CPU.
-- 'sudo pongtwkr cpumin <value_in_ghz>'
+- `sudo pongtwkr cpumin <value_in_ghz>`
   - Limits the minimum frequency of your CPU in GhZ.
-- 'sudo pongtwkr cpumax <value_in_ghz>'
+- `sudo pongtwkr cpumax <value_in_ghz>`
   - Limits the maximum frequency of your CPU in GhZ.
-- 'sudo pongtwkr dirtyratio <value>'
+- `sudo pongtwkr dirtyratio <value>`
   - Adjusts vm.dirty_ratio
-- sudo pongtwkr dirtybackground <value>
+- `sudo pongtwkr dirtybackground <value>`
   - Adjusts vm.dirty_background_ratio
-- 'sudo pongtwkr cachepressure <value>'
+- `sudo pongtwkr cachepressure <value>`
   - Adjusts vm.vfs_cache_pressure
-- 'sudo pongtwkr info'
+- sudo pongtwkr info`
   - Shows a quick-info panel
  
 ## v0.2 Changelog
