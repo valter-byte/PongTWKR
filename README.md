@@ -1,5 +1,5 @@
 # PongTWKR
-An easy-to-use, handful tool for tweaking CPU, RAM, and other PC components like Swappiness, governor, etc. easily, without having to confront the terminal or shady directories. Please note that this program is targeted for those that can't/don't want to mess with commands or files on their Linux Distro, but want to get overall better performance.
+The objective of PongTWKR is to be an easy-to-use, handy tool for tweaking CPU, RAM, and other PC components like Swappiness, governor, etc. easily, without having to confront the terminal or shady directories. Please note that this program is targeted for those that can't/don't want to mess with commands or files on their Linux Distro, but want to get overall better performance.
 
 # How to use
 
@@ -14,4 +14,9 @@ Please note that PongTWKR needs psutil to work correctly.
 
 Just tell me whatever other tweaking option should I add. That will completely help my no-creativity brain. Or send me screenshots of the bugs/errors.
 
-# v0.2 tomorrow, probably adding sillier things. Bai-bai!
+
+
+# Please note that PongTWKR is an ambitious project that is just starting. More and more features will be added in the (not so far) future.
+
+
+### v0.2 tomorrow, probably adding sillier things. Bai-bai!
