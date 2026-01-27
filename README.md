@@ -30,6 +30,9 @@ Well, as for January 27, 2026, PongTWKR is still on early development. v0.2. It 
 - Added maximum and minimum CPU frequency command
 - Added more info + a cute design to 'sudo pongtwkr info'
 
+# Warning
+UHM Just realized for the sake of your PC please dont do "sudo pongtwkr swapiness 100000000000", since I didnt add a security for that. Gon' do that in v0.3 with a "reverse everything" command.
+
 # Our objective & philosophy
 PongTWKR aims to unify Linux performance tweaks that are usually scattered across different packages.  
 Our long-term goal is to be a *modular* and *open-source* toolkit, avoiding the need to install huge “gaming packs” with hundreds of tools you’ll never use.  
