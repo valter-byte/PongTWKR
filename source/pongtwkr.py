@@ -1,4 +1,11 @@
-# -- Importing & Assuring dependencies -- 
+#!/usr/bin/env python3
+# PongTWKR v0.4 - A simple system tweaker for Linux systems.
+# Author: valter-byte (and copilot ty ty for saving me from my crashouts at 3am)
+# License: GLP-3.0
+# uhm yeah ik its messy but idc
+# im lazy and tired ok
+# Enjoy it lol
+# if anyone reads this, thank you for installing and messing around with it <3
 import sys
 import glob
 import re
@@ -10,7 +17,7 @@ except ImportError:
 import os
 import datetime
 import subprocess
-# -- Log creating --
+#-- Log making --
 real_user = os.environ.get('SUDO_USER') or os.environ.get('USER')
 if real_user:
     log_dir = f"/home/{real_user}/.pongtwkr"
@@ -20,7 +27,7 @@ if not os.path.exists(log_dir):
     os.makedirs(log_dir, exist_ok=True)
 log_file = os.path.join(log_dir, "logs.txt")
 
-# -- Log writing --
+#-- Log updating --
 def log_change(action):
     try:
         with open(log_file, "a") as f:
@@ -30,15 +37,19 @@ def log_change(action):
 # -- Disclaimers --
 def show_param_info(param):
     print(infos.get(param, "Ups, theres no info for this..."))
-    # Añadir aviso de seguridad similar al de swappiness para otros tweaks
     if param in ("dirtyratio", "dirtybackground", "cachepressure"):
         print("⚠️ Security: values out of range may cause instablity and kernel errors.")
     if param in ("cpumin", "cpumax"):
-        print("⚠️ Beware: The CPU automaticaly tops itself. No matter if you do override, the values will be topped to the physical limits of your CPY")
+        print("⚠️ Beware: The CPU automatically tops itself. No matter if you do override, the values will be topped to the physical limits of your CPY")
     if param == "governor":
         print("⚠️ Beware: Some governors may not be available for all systems.")
-
-# -- Value capper --
+    if param == "thp":
+        print("⚠️ Note: Setting THP to 'always' may lead to performance degradation in some workloads.")
+    if param == "hugepages":
+        print("⚠️ Note: Setting a high number of HugePages may lead to memory allocation issues for other applications.")
+    if param == "smt":
+        print("⚠️ SMT Multithreading may not be available on all systems.")
+# -- Value Cappers
 def limit_value(name, value, min_val, max_val):
     try:
         val = int(value)
@@ -61,22 +72,126 @@ def limit_float(name, value, min_val, max_val):
         return max_val
     return val
 
-# -- Info array --
+# -- Info Array --
 infos = {
     "swappiness": "Swappiness is how sensible is the system to switching to SWAP instead of RAM. Safe range: 0-100.",
     "dirtyratio": "Dirty Ratio defines the maximum percentage of dirty memory before writing onto the disk. Safe range: 20-70%",
-    "dirtybackground": "Same as dirty ratio, but writing onto the background instead of the disk. IT SHOULD BE ALWAYS LOWER THAN DIRTY RATIO. Safe range: 5-50",
+    "dirtybackground": "Same as dirty ratio, but writing onto the background instead of the disk. IT SHOULD ALWAYS BE LOWER THAN DIRTY RATIO. Safe range: 5-50",
     "cachepressure": "Controls the pressure over the cache (duh), safe values: 0-100",
     "governor": "Governors are presets that the CPU comes with. If you want performance, use sudo pongtwkr governor performance, if you want power saving, uso powersave.",
     "cpumin": "Defines the minimum frequency for the CPU",
     "cpumax": "Defines the maximum frequency for the CPU.",
     "info": "Shows a quick set of info and tweaks made.",
-    "ping": "Well... justs ping google to see your ms.. what did you expect???"
+    "ping": "Well... just pings google to see your ms.. what did you expect???",
+    "thp": """Transparent HugePages (THP) is a kernel feature that allows the system to use larger memory pages, 
+improving performance for applications that use large amounts of memory.""",
+    "hugepages": """HugePages is a memory management feature that allows the allocation of large memory pages, "
+which can improve performance for certain applications by reducing overhead and increasing TLB efficiency.""",
+    "cputurbo": """Enables or disables CPU Turbo Boost (Intel) or Precision Boost (AMD),
+which allows the CPU to run at higher frequencies under certain conditions for improved performance.""",
+    "smt": "Simultaneous Multi-Threading (SMT) allows multiple threads to run on each CPU core, improving parallelism and performance in multi-threaded applications."
 }
+# -- THP or sum --
+def set_thp(mode):
+    path = "/sys/kernel/mm/transparent_hugepage/enabled"
+    mode = mode.lower()
+
+    # yk kernel is kinda a pussy with the value names
+    allowed = {
+        "always": "always",
+        "enabled": "always",   
+        "never": "never",
+        "disabled": "never",  
+        "madvise": "madvise"
+    }
+
+    if mode not in allowed:
+        print(f"⚠️ Error: THP only accepts 'always', 'never', or 'madvise' (aliases: enabled/disabled). You gave '{mode}'.")
+        return
+
+    try:
+        with open(path, "w") as f:
+            f.write(allowed[mode])
+        print(f"✅ Transparent HugePages set to {allowed[mode]}")
+        log_change(f"THP set to {allowed[mode]}")
+    except PermissionError:
+        print("⚠️ Error: Please use SUDO.")
+    except Exception as e:
+        print(f"⚠️ Error when applying THP: {e}")
+
+# huge pages
+def set_hugepages(count):
+    path = "/proc/sys/vm/nr_hugepages"
+    try:
+        with open(path, "w") as f:
+            f.write(str(count))
+        print(f"✅ HugePages set to {count}")
+        log_change(f"HugePages set to {count}")
+    except PermissionError:
+        print("⚠️ Error: Please use SUDO.")
+    except Exception as e:
+        print(f"⚠️ Error when applying HugePages: {e}")
+
+# -- smt and the intel variable --
+def set_smt(state):
+    path = "/sys/devices/system/cpu/smt/control"
+
+    if state.lower() == "true":
+        state = "on"
+    elif state.lower() == "false":
+        state = "off"
+    else:
+        print("⚠️ Error: smt only accepts 'true' or 'false'.")
+        return
+
+    try:
+        if os.path.exists(path):
+            with open(path, "w") as f:
+                f.write(state)
+            print(f"✅ SMT set to {state}")
+            log_change(f"SMT set to {state}")
+        else:
+            print("⚠️ SMT control not available on this system.")
+    except PermissionError:
+        print("⚠️ Error: Please use SUDO.")
+    except Exception as e:
+        print(f"⚠️ Error when applying SMT: {e}")
 
 
+# -- turbo boost and amd or whatever yeah yk... --
+def set_cputurbo(state):
+   
+    
+    if state.lower() == "true":
+        state = "on"
+    elif state.lower() == "false":
+        state = "off"
+    else:
+     print("⚠️ Error: cputurbo only accepts 'true' or 'false'.")
+     return
 
-# -- Swappiness --
+    intel_path = "/sys/devices/system/cpu/intel_pstate/no_turbo"
+    amd_path = "/sys/devices/system/cpu/cpufreq/boost"
+    try:
+        if os.path.exists(intel_path):
+            val = "0" if state == "on" else "1"
+            with open(intel_path, "w") as f:
+                f.write(val)
+            print(f"✅ Intel Turbo Boost set to {state}")
+            log_change(f"Turbo Boost set to {state}")
+        elif os.path.exists(amd_path):
+            val = "1" if state == "on" else "0"
+            with open(amd_path, "w") as f:
+                f.write(val)
+            print(f"✅ AMD Precision Boost set to {state}")
+            log_change(f"Precision Boost set to {state}")
+        else:
+            print("⚠️ Turbo/Precision Boost not available on this system.")
+    except PermissionError:
+        print("⚠️ Error: Please use SUDO.")
+    except Exception as e:
+        print(f"⚠️ Error when applying turbo/boost: {e}")
+# --- Swappiness ---
 def set_swappiness(value):
     try:
         ival = int(value)
@@ -93,7 +208,7 @@ def set_swappiness(value):
     except OSError as e:
         print(f"⚠️ Error when applying swappiness: {e}. The kernel refused")
 
-# -- Governor --
+# --- Governor ---
 def set_governor(value):
     paths = glob.glob("/sys/devices/system/cpu/cpu*/cpufreq/scaling_governor")
     if not paths:
@@ -110,7 +225,7 @@ def set_governor(value):
     print(f"✅ CPU governor set to {value} in {len(paths)} cores")
     log_change(f"Governor set to {value}")
 
-# -- Dirty Ratio --
+# --- Dirty Ratio ---
 def set_dirty_ratio(value):
     try:
         ival = int(value)
@@ -127,7 +242,7 @@ def set_dirty_ratio(value):
     except OSError as e:
         print(f"⚠️ Error when applying dirty_ratio: {e}. Invalid value for the kernel. Remember its a percentage value. (Max. 100)")
 
-# -- Dirty Background Ratio --
+# --- Dirty Background Ratio ---
 def set_dirty_background_ratio(value):
     try:
         ival = int(value)
@@ -144,7 +259,7 @@ def set_dirty_background_ratio(value):
     except OSError as e:
         print(f"⚠️ Error when applying dirty_ratio: {e}. Invalid value for the kernel. Remember its a percentage value. (Max. 100)")
 
-# -- Cache Pressure --
+# --- Cache Pressure ---
 def set_cache_pressure(value):
     try:
         ival = int(value)
@@ -161,7 +276,7 @@ def set_cache_pressure(value):
     except OSError as e:
         print(f"⚠️ Error when applying vfs_cache_pressure: {e}. Please send this error to me.")
 
-# -- CPU min/max freq --
+# --- CPU min/max freq ---
 def set_cpu_min_freq(value):
     try:
         ghz = float(value)
@@ -206,14 +321,20 @@ def set_cpu_max_freq(value):
     print(f"✅ CPU max freq set to {ghz:.2f} GHz ({khz} kHz)")
     log_change(f"CPU max freq set to {ghz:.2f} GHz")
 
-# -- Reset defaults --
+# --- Reset defaults ---
 defaults = {}
 def save_defaults():
     for param, path in {
         "swappiness": "/proc/sys/vm/swappiness",
         "dirtyratio": "/proc/sys/vm/dirty_ratio",
         "dirtybackground": "/proc/sys/vm/dirty_background_ratio",
-        "cachepressure": "/proc/sys/vm/vfs_cache_pressure"
+        "cachepressure": "/proc/sys/vm/vfs_cache_pressure",
+        "cputurbo_intel": "/sys/devices/system/cpu/intel_pstate/no_turbo",
+        "cputurbo_amd": "/sys/devices/system/cpu/cpufreq/boost",
+        "smt": "/sys/devices/system/cpu/smt/control",
+        "hugepages": "/proc/sys/vm/nr_hugepages",
+                                                  # <-- here would go THP, but f*ck it
+
     }.items():
         try:
             with open(path) as f:
@@ -226,7 +347,12 @@ def reset_defaults():
         "swappiness": "/proc/sys/vm/swappiness",
         "dirtyratio": "/proc/sys/vm/dirty_ratio",
         "dirtybackground": "/proc/sys/vm/dirty_background_ratio",
-        "cachepressure": "/proc/sys/vm/vfs_cache_pressure"
+        "cachepressure": "/proc/sys/vm/vfs_cache_pressure",
+        "cputurbo_intel": "/sys/devices/system/cpu/intel_pstate/no_turbo",
+        "cputurbo_amd": "/sys/devices/system/cpu/cpufreq/boost",
+        "smt": "/sys/devices/system/cpu/smt/control",
+        "hugepages": "/proc/sys/vm/nr_hugepages",
+
     }.items():
         if defaults.get(param) is not None:
             try:
@@ -237,17 +363,22 @@ def reset_defaults():
             except Exception as e:
                 print(f"⚠️ Could not reset {param}: {e}")
 
-# -- Safe profile --
+# --- Safe profile ---
 def safe_profile():
     set_swappiness(60)
     set_governor("powersave")
     set_dirty_ratio(20)
     set_dirty_background_ratio(10)
     set_cache_pressure(50)
+    set_cputurbo("true")
+    set_smt("on")
+    set_hugepages(0)
+    set_thp("madvise")
     print("✅ Safe profile applied")
     log_change("Safe profile applied")
 
-# -- Ping --
+# Ping
+
 def ping_test(host="8.8.8.8"):
     try:
         out = subprocess.check_output(["ping", "-c", "1", "-W", "2", host],
@@ -266,7 +397,7 @@ def ping_test(host="8.8.8.8"):
         print(f"⚠️ Ping failed: No answer from {host}.")
     except Exception as e:
         print(f"⚠️ You found a mega-hiper-strange error, please send it to me: {e}")
-# -- easter egg --
+# def not the easter egg
 def show_info_war():
     print(f"""
     ☢️ Designated Warheads: ALPHA & BETA
@@ -275,7 +406,34 @@ def show_info_war():
     ⏳ Time for impact: T-15 seconds for launch."
     🖥️ Executing command: sudo rm -rf / --no-preserve-root)
     Thank you, AGENT FINN MC MISSILE. Proceding with launch...""")
-# -- FakeFetch --
+
+# getting fan speeds, this is 100% not working
+def get_all_fan_speeds(): 
+    fan_speeds = [] 
+    try: 
+        fan_paths = glob.glob("/sys/class/hwmon/hwmon*/fan*_input") 
+        for path in fan_paths: 
+            try: 
+                with open(path) as f: 
+                    val = f.read().strip() 
+                    if val.isdigit(): 
+                        label = path.split("/")[-2] + "/" + path.split("/")[-1] 
+                        fan_speeds.append(f"{label}: {val} RPM") 
+            except: 
+                    continue 
+    except: 
+        pass 
+    return fan_speeds if fan_speeds else ["N/A"]
+# amd intel translator
+def format_turbo_status(intel_val, amd_val):
+    if intel_val in ("0", "1"):
+        return "Enabled" if intel_val == "0" else "Disabled"
+    elif amd_val in ("0", "1"):
+        return "Enabled" if amd_val == "1" else "Disabled"
+    else:
+        return "N/A"
+
+# --- fakefetch ---
 def show_info():
     mem = psutil.virtual_memory()
     swap = psutil.swap_memory()
@@ -297,8 +455,15 @@ def show_info():
     governor = read_file("/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor")
     cpu_min = read_file("/sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq")
     cpu_max = read_file("/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq")
+    turbo_status_intel = read_file("/sys/devices/system/cpu/intel_pstate/no_turbo")
+    turbo_status_amd = read_file("/sys/devices/system/cpu/cpufreq/boost")
+    smt_status = read_file("/sys/devices/system/cpu/smt/control")
+    hugepages_status = read_file("/proc/sys/vm/nr_hugepages")
+    thp_status = read_file("/sys/kernel/mm/transparent_hugepage/enabled")
+    fan_speed = get_all_fan_speeds()
+    uptime_raw = read_file("/proc/uptime")
+    process_count = str(len(psutil.pids()))
 
-    # KHZ to GHz
     def khz_to_ghz(val):
         try:
             return f"{int(val) / 1_000_000:.2f} GHz"
@@ -308,16 +473,17 @@ def show_info():
     cpu_min_ghz = khz_to_ghz(cpu_min)
     cpu_max_ghz = khz_to_ghz(cpu_max)
 
-    # -- Out of range disclaimers --
+    # fakefetch disclaimers
     if swappiness.isdigit() and int(swappiness) > 100:
         print("⚠️ Swappiness out of range. It may cause performance issues.")
-    if dirty_ratio.isdigit() and int(dirty_ratio) > 20:
+    if dirty_ratio.isdigit() and int(dirty_ratio) > 70:
         print("⚠️ Dirty Ratio out of range. It may cause performance issues.")
     if dirty_background.isdigit() and int(dirty_background) > 50:
         print("⚠️ Dirty Background Ratio out of range. It may cause performance issues.")
     if cache_pressure.isdigit() and int(cache_pressure) > 100:
         print("⚠️ vfs_cache_pressure out of range. It may cause performance issues.")
-    # -- Extremely high freq disclaimer --
+    if hugepages_status.isdigit() and int(hugepages_status) > 2046:
+        print("⚠️ HugePages count unusually high.")
     try:
         if cpu_min.isdigit() and int(cpu_min) > 6_000_000:
             print("⚠️ CPU min freq unusually high (Check...).")
@@ -348,15 +514,21 @@ def show_info():
 ╚═╝░░░░░░╚════╝░╚═╝░░╚══╝░╚═════╝░░░░╚═╝░░░░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝╚═╝░░╚═╝
 """
 
-    # Info lines
     info_lines = [
-        f"💾 RAM: {mem.available // (1024**2)} MB avaiable / {mem.total // (1024**2)} MB total",
+        f"💾 RAM: {mem.available // (1024**2)} MB libres / {mem.total // (1024**2)} MB totales",
         f"⚙️ CPU usage per core: {cpu_usage}",
         f"🧵 Threads: {threads} | Physical Cores: {cores}",
         f"🔧 Swappiness: {swappiness}",
         f"📝 vm.dirty_ratio: {dirty_ratio}",
         f"📝 vm.dirty_background_ratio: {dirty_background}",
         f"📝 vm.vfs_cache_pressure: {cache_pressure}",
+        f"🚀 Turbo/Precision Boost: {format_turbo_status(turbo_status_intel, turbo_status_amd)}",
+        f"🧬 SMT: {smt_status}",
+        f"📄 HugePages: {hugepages_status}",
+        f"📄 THP: {thp_status}",
+        *[f"🌀 {fs}" for fs in fan_speed],
+        f"⏱️ Uptime: {int(float(uptime_raw.split()[0])) // 3600} hours",
+        f"⚙️ Processes running: {process_count}",
         f"⚡ Governor: {governor}",
         f"⚡ CPU min freq: {cpu_min_ghz}",
         f"⚡ CPU max freq: {cpu_max_ghz}",
@@ -364,7 +536,7 @@ def show_info():
         f"📂 Buffers: {mem.buffers // (1024**2)} MB | Cached: {mem.cached // (1024**2)} MB",
     ]
 
-    # merge ascii + info
+    # merge ascii and fetch
     ascii_lines = ascii_art.splitlines()
     max_len = max(len(line) for line in ascii_lines)
     for i in range(max(len(ascii_lines), len(info_lines))):
@@ -373,7 +545,7 @@ def show_info():
         print(f"{left:<{max_len}}   {right}")
 
 
-# --- Main ---
+# main ig, justs tell you how to use if u do sudo pongtwkr
 if __name__ == "__main__":
     save_defaults()
 
@@ -383,12 +555,11 @@ if __name__ == "__main__":
 
     option = sys.argv[1]
 
-    # Info
     if len(sys.argv) == 3 and sys.argv[2] == "info":
         show_param_info(option)
         sys.exit(0)
 
-    # Override
+    # Override kinda
     option = sys.argv[1]
 
     override = "override" in sys.argv
@@ -400,15 +571,19 @@ if __name__ == "__main__":
             val = limit_value("Swappiness", sys.argv[2], 0, 100)
             if val is not None:
                 set_swappiness(val)
-
+    elif option == "cputurbo": 
+        set_cputurbo(sys.argv[2])
+    elif option == "smt": 
+        set_smt(sys.argv[2])
     elif option == "governor":
         set_governor(sys.argv[2])
-
+    elif option == "thp": 
+        set_thp(sys.argv[2])
     elif option == "dirtyratio":
         if override:
             set_dirty_ratio(sys.argv[2])
         else:
-            val = limit_value("Dirty Ratio", sys.argv[2], 0, 20)
+            val = limit_value("Dirty Ratio", sys.argv[2], 0, 40)
             if val is not None:
                 set_dirty_ratio(val)
 
@@ -427,9 +602,14 @@ if __name__ == "__main__":
             val = limit_value("Cache Pressure", sys.argv[2], 0, 1000)
             if val is not None:
                 set_cache_pressure(val)
-
+    elif option == "hugepages":
+        if override:
+            set_hugepages(sys.argv[2])
+        else:
+            val = limit_value("HugePages", sys.argv[2], 0, 2046)
+            if val is not None:
+                set_hugepages(val)
     elif option == "cpumin":
-       
         if override:
             set_cpu_min_freq(sys.argv[2])
             print(f"The value tops with your CPU: no matter if you use override, it will top to the physical limit of your CPU.")
@@ -439,7 +619,6 @@ if __name__ == "__main__":
                 set_cpu_min_freq(val)
 
     elif option == "cpumax":
-        
         if override:
             set_cpu_max_freq(sys.argv[2])
             print(f"The value tops with your CPU: no matter if you use override, it will top to the physical limit of your CPU.")
@@ -451,7 +630,8 @@ if __name__ == "__main__":
     elif option == "info":
          if override:
              print(f"🚀 [WARNING] INFO OVERRIDE MODE ACTIVATED.")
-             print(f"☢️ NUCLEAR WARHEADS ALPHA & BETA ACTIVE AND POINTING TO DALLAS, HOUSTON AND NEW YORK."))
+             print(f"☢️ NUCLEAR WARHEADS ALPHA & BETA ACTIVE AND POINTING TO DALLAS, HOUSTON AND NEW YORK.")
+             print(f"🛰️ SATELLITE UPLINK ESTABLISHED. THANK YOU, MR. PUTIN.")
              show_info_war()
          else:
             show_info()
@@ -467,3 +647,4 @@ if __name__ == "__main__":
 
     else:
         print("⚠️ Unknown option or bad usage. Please refer to the documentation for further help.")
+
