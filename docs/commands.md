@@ -7,7 +7,7 @@
 **Sets the CPU governor to the selected preset**
 - `sudo pongtwkr dirtyratio <value>`
 **Sets the dirty memory % before the system starts writing on the disk. The value only goes from 0 to 100.**
--`sudo pongtwkr dirtybackground <value>`
+- `sudo pongtwkr dirtybackground <value>`
 **Sets the dirty memory % before the system starts writing on the background. The value only goes from 0 to 100** ***AND SHALL ALWAYS BE SMALLER THAN DIRTY RATIO.**
 - `sudo pongtwkr cachepressure <value>`
 **Sets the VFS Cache pressure to the designated value.**
