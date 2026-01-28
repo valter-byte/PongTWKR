@@ -26,7 +26,7 @@
    - I swear to god last update with the -ed format alr?
    - Small audio tweaks (buffers, latency, pulseaudio, etc.)
    - Minimal adjustments before v1.0
-- ## Release v1.0 — “Pong”
+- ## Release v1.0 — “PongTWKR 1.0”
    - UI/TUI.
    - New branch for the repo: CLI.
    - Official packaging (deb, rpm, aur, flatpak, i dont know, whatever...)
