@@ -351,7 +351,7 @@ def show_info():
 
     # Info lines (incluye dirty_background y cache_pressure y frecuencias)
     info_lines = [
-        f"💾 RAM: {mem.available // (1024**2)} MB libres / {mem.total // (1024**2)} MB totales",
+        f"💾 RAM: {mem.available // (1024**2)} MB avaiable / {mem.total // (1024**2)} MB total",
         f"⚙️ CPU usage per core: {cpu_usage}",
         f"🧵 Threads: {threads} | Physical Cores: {cores}",
         f"🔧 Swappiness: {swappiness}",
