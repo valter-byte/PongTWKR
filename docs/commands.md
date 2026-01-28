@@ -13,7 +13,7 @@
 **Sets the VFS Cache pressure to the designated value.**
 - `sudo pongtwkr cpumin <value_in_GHz>`
 **Sets the CPU minimum frequency to the designated value.**
--` sudo pongtwkr cpumax <value_in_GHz>`
+-  `sudo pongtwkr cpumax <value_in_GHz>`
 **Sets the CPU maximum frequency to the designated value.**
 > Please note that the CPU will automatically cap itself: If you have a 3.5GHz CPU, no matter if you run `sudo pongtwkr cpumax 7 override` the CPU will be capped to 3.5GHz.
 
