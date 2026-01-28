@@ -16,7 +16,14 @@
 -  `sudo pongtwkr cpumax <value_in_GHz>`
 **Sets the CPU maximum frequency to the designated value.**
 > Please note that the CPU will automatically cap itself: If you have a 3.5GHz CPU, no matter if you run `sudo pongtwkr cpumax 7 override` the CPU will be capped to 3.5GHz.
-
+-  `sudo pongtwkr cpuboost <true/false>`
+**Enables/Disables Intel Turbo Boost or AMD Precision Boost depending on your system.**
+-  `sudo pongtwkr hugepages <count>`
+**Sets the HugePages to the designated number.**
+-  `sudo pongtwkr thp <enable|disable|madvise>`
+**Sets the THP (Transparent Huge Pages) to the designated option.**
+-  `sudo pongtwkr smt <true/false>`
+**Toggles the SMT (Multithreading) to the designated option.**
 ## Misc.
 - `sudo pongtwkr info`
 **Shows a quick-info panel with a cool ASCII. Totally-self-produced idea... *cough* fastfetch but with other info... *cough* yeah..-**
