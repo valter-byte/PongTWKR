@@ -64,8 +64,8 @@ def limit_float(name, value, min_val, max_val):
 # --- Info de parámetros ---
 infos = {
     "swappiness": "Swappiness is how sensible is the system to switching to SWAP instead of RAM. Safe range: 0-100.",
-    "dirtyratio": "Dirty Ratio defines the maximum percentage of dirty memory before writing onto the disk. Safe range: 5-50%",
-    "dirtybackground": "Same as dirty ratio, but writing onto the background instead of the disk. IT SHOULD BE ALWAYS HIGHER THAN DIRTY RATIO. Safe range: 20-70",
+    "dirtyratio": "Dirty Ratio defines the maximum percentage of dirty memory before writing onto the disk. Safe range: 20-70%",
+    "dirtybackground": "Same as dirty ratio, but writing onto the background instead of the disk. IT SHOULD BE ALWAYS LOWER THAN DIRTY RATIO. Safe range: 5-50",
     "cachepressure": "Controls the pressure over the cache (duh), safe values: 0-100",
     "governor": "Governors are presets that the CPU comes with. If you want performance, use sudo pongtwkr governor performance, if you want power saving, uso powersave.",
     "cpumin": "Defines the minimum frequency for the CPU",
