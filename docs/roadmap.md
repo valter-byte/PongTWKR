@@ -1,11 +1,6 @@
 # Roadmap for first semester of 2026:
 ## ROADMAP! TO 1.0 WE GO!
-- v0.3 — “Foolproof” 📌 **Here we are.**
-
-- ## v0.4 — “Even more tweaks…”
-  - More tweaks.
-  - More CPU tweaks
-  - Info panel expansion
+- v0.4 — “More Tweaks” 📌 **Here we are.**
 - ## v0.5 — “Profiled”
   - Presets
   - Custom profiles that you can create and apply
