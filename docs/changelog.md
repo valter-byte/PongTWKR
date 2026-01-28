@@ -18,6 +18,7 @@ The whole purpose of this update was setting safe bounds and information. Nothin
    > Reset resets all the values to the ones that were before starting the program.
    > Safe resets all the values to regular ones that will work on any PC.
 - ***General tweaks and fixes. yeah, you know...***
+- ***Added an ultra special hidden easter egg...***
 
 # v0.2 "Just some cache..."
 > Added a bit more tweaks to the now not-so-useless tweaker.
