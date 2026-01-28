@@ -1,6 +1,23 @@
 # CHANGELOG 
 ## Here will go the changes added to the tweaker. 
 
+# v0.4 "More Tweaks"
+> I mean, who doesnt love being able to change your HugePages with just a command line?
+
+### New features
+Added CPU Turbo/Boost, THP, HugePages, and SMT support.
+
+- ***Added CPU Turbo/Boost enable/disable*** the program detects your path (Intel/AMD) and applies the changes.
+- ***Added THP selection*** now you can select `enable` , `disable` or `madvise`.
+- ***Added HugePages quantity selector*** just choose how many HugePages you want.
+- ***Added SMT (Multithreading) toggler***  for both Intel/AMD.
+
+### Tweaks
+- ***Addition of the limiters/security/disclaimers*** to the new commands.
+- ***Integration to the safe/reset command*** to the new tweaks.
+- ***Extra info on `sudo pongtwkr info`*** more specifically, Fan speed, uptime, processes, hugepages, THP, Turbo I/O and SMT.
+- ***General tweaks to the code.***
+
 # v0.3 "Foolproof"
 > "Safety first. I guess..."
 
