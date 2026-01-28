@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+# -- Importing & Assuring dependencies -- 
 import sys
 import glob
 import re
@@ -10,7 +10,7 @@ except ImportError:
 import os
 import datetime
 import subprocess
-# Log making
+# -- Log creating --
 real_user = os.environ.get('SUDO_USER') or os.environ.get('USER')
 if real_user:
     log_dir = f"/home/{real_user}/.pongtwkr"
@@ -20,14 +20,14 @@ if not os.path.exists(log_dir):
     os.makedirs(log_dir, exist_ok=True)
 log_file = os.path.join(log_dir, "logs.txt")
 
-# Log changing
+# -- Log writing --
 def log_change(action):
     try:
         with open(log_file, "a") as f:
             f.write(f"[{datetime.datetime.now()}] {action}\n")
     except:
         pass
-# infos
+# -- Disclaimers --
 def show_param_info(param):
     print(infos.get(param, "Ups, theres no info for this..."))
     # Añadir aviso de seguridad similar al de swappiness para otros tweaks
@@ -38,7 +38,7 @@ def show_param_info(param):
     if param == "governor":
         print("⚠️ Beware: Some governors may not be available for all systems.")
 
-# Value limiter.
+# -- Value capper --
 def limit_value(name, value, min_val, max_val):
     try:
         val = int(value)
@@ -61,7 +61,7 @@ def limit_float(name, value, min_val, max_val):
         return max_val
     return val
 
-# --- Info de parámetros ---
+# -- Info array --
 infos = {
     "swappiness": "Swappiness is how sensible is the system to switching to SWAP instead of RAM. Safe range: 0-100.",
     "dirtyratio": "Dirty Ratio defines the maximum percentage of dirty memory before writing onto the disk. Safe range: 20-70%",
@@ -76,7 +76,7 @@ infos = {
 
 
 
-# --- Swappiness ---
+# -- Swappiness --
 def set_swappiness(value):
     try:
         ival = int(value)
@@ -93,7 +93,7 @@ def set_swappiness(value):
     except OSError as e:
         print(f"⚠️ Error when applying swappiness: {e}. The kernel refused")
 
-# --- Governor ---
+# -- Governor --
 def set_governor(value):
     paths = glob.glob("/sys/devices/system/cpu/cpu*/cpufreq/scaling_governor")
     if not paths:
@@ -110,7 +110,7 @@ def set_governor(value):
     print(f"✅ CPU governor set to {value} in {len(paths)} cores")
     log_change(f"Governor set to {value}")
 
-# --- Dirty Ratio ---
+# -- Dirty Ratio --
 def set_dirty_ratio(value):
     try:
         ival = int(value)
@@ -127,7 +127,7 @@ def set_dirty_ratio(value):
     except OSError as e:
         print(f"⚠️ Error when applying dirty_ratio: {e}. Invalid value for the kernel. Remember its a percentage value. (Max. 100)")
 
-# --- Dirty Background Ratio ---
+# -- Dirty Background Ratio --
 def set_dirty_background_ratio(value):
     try:
         ival = int(value)
@@ -144,7 +144,7 @@ def set_dirty_background_ratio(value):
     except OSError as e:
         print(f"⚠️ Error when applying dirty_ratio: {e}. Invalid value for the kernel. Remember its a percentage value. (Max. 100)")
 
-# --- Cache Pressure ---
+# -- Cache Pressure --
 def set_cache_pressure(value):
     try:
         ival = int(value)
@@ -161,7 +161,7 @@ def set_cache_pressure(value):
     except OSError as e:
         print(f"⚠️ Error when applying vfs_cache_pressure: {e}. Please send this error to me.")
 
-# --- CPU min/max freq ---
+# -- CPU min/max freq --
 def set_cpu_min_freq(value):
     try:
         ghz = float(value)
@@ -206,7 +206,7 @@ def set_cpu_max_freq(value):
     print(f"✅ CPU max freq set to {ghz:.2f} GHz ({khz} kHz)")
     log_change(f"CPU max freq set to {ghz:.2f} GHz")
 
-# --- Reset defaults ---
+# -- Reset defaults --
 defaults = {}
 def save_defaults():
     for param, path in {
@@ -237,7 +237,7 @@ def reset_defaults():
             except Exception as e:
                 print(f"⚠️ Could not reset {param}: {e}")
 
-# --- Safe profile ---
+# -- Safe profile --
 def safe_profile():
     set_swappiness(60)
     set_governor("powersave")
@@ -247,8 +247,7 @@ def safe_profile():
     print("✅ Safe profile applied")
     log_change("Safe profile applied")
 
-# Ping
-
+# -- Ping --
 def ping_test(host="8.8.8.8"):
     try:
         out = subprocess.check_output(["ping", "-c", "1", "-W", "2", host],
@@ -267,7 +266,7 @@ def ping_test(host="8.8.8.8"):
         print(f"⚠️ Ping failed: No answer from {host}.")
     except Exception as e:
         print(f"⚠️ You found a mega-hiper-strange error, please send it to me: {e}")
-# easter egg
+# -- easter egg --
 def show_info_war():
     print(f"""
     ☢️ Designated Warheads: ALPHA & BETA
@@ -276,7 +275,7 @@ def show_info_war():
     ⏳ Time for impact: T-15 seconds for launch."
     🖥️ Executing command: sudo rm -rf / --no-preserve-root)
     Thank you, AGENT FINN MC MISSILE. Proceding with launch...""")
-# --- Info estilo gamer ---
+# -- FakeFetch --
 def show_info():
     mem = psutil.virtual_memory()
     swap = psutil.swap_memory()
@@ -299,7 +298,7 @@ def show_info():
     cpu_min = read_file("/sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq")
     cpu_max = read_file("/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq")
 
-    # Convertir frecuencias a GHz si son números
+    # KHZ to GHz
     def khz_to_ghz(val):
         try:
             return f"{int(val) / 1_000_000:.2f} GHz"
@@ -309,7 +308,7 @@ def show_info():
     cpu_min_ghz = khz_to_ghz(cpu_min)
     cpu_max_ghz = khz_to_ghz(cpu_max)
 
-    # Avisos fuera de rango (seguridad)
+    # -- Out of range disclaimers --
     if swappiness.isdigit() and int(swappiness) > 100:
         print("⚠️ Swappiness out of range. It may cause performance issues.")
     if dirty_ratio.isdigit() and int(dirty_ratio) > 20:
@@ -318,7 +317,7 @@ def show_info():
         print("⚠️ Dirty Background Ratio out of range. It may cause performance issues.")
     if cache_pressure.isdigit() and int(cache_pressure) > 100:
         print("⚠️ vfs_cache_pressure out of range. It may cause performance issues.")
-    # Aviso sobre frecuencias absurdas (en kHz)
+    # -- Extremely high freq disclaimer --
     try:
         if cpu_min.isdigit() and int(cpu_min) > 6_000_000:
             print("⚠️ CPU min freq unusually high (Check...).")
@@ -349,7 +348,7 @@ def show_info():
 ╚═╝░░░░░░╚════╝░╚═╝░░╚══╝░╚═════╝░░░░╚═╝░░░░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝╚═╝░░╚═╝
 """
 
-    # Info lines (incluye dirty_background y cache_pressure y frecuencias)
+    # Info lines
     info_lines = [
         f"💾 RAM: {mem.available // (1024**2)} MB avaiable / {mem.total // (1024**2)} MB total",
         f"⚙️ CPU usage per core: {cpu_usage}",
@@ -365,7 +364,7 @@ def show_info():
         f"📂 Buffers: {mem.buffers // (1024**2)} MB | Cached: {mem.cached // (1024**2)} MB",
     ]
 
-    # Combinar ASCII izquierda + info derecha
+    # merge ascii + info
     ascii_lines = ascii_art.splitlines()
     max_len = max(len(line) for line in ascii_lines)
     for i in range(max(len(ascii_lines), len(info_lines))):
@@ -384,7 +383,7 @@ if __name__ == "__main__":
 
     option = sys.argv[1]
 
-    # Info de parámetros (ej: pongtwkr swappiness info)
+    # Info
     if len(sys.argv) == 3 and sys.argv[2] == "info":
         show_param_info(option)
         sys.exit(0)
@@ -430,7 +429,7 @@ if __name__ == "__main__":
                 set_cache_pressure(val)
 
     elif option == "cpumin":
-        # rango seguro sugerido: 0.5 - 6.0 GHz
+       
         if override:
             set_cpu_min_freq(sys.argv[2])
             print(f"The value tops with your CPU: no matter if you use override, it will top to the physical limit of your CPU.")
@@ -440,7 +439,7 @@ if __name__ == "__main__":
                 set_cpu_min_freq(val)
 
     elif option == "cpumax":
-        # rango seguro sugerido: 0.5 - 6.0 GHz
+        
         if override:
             set_cpu_max_freq(sys.argv[2])
             print(f"The value tops with your CPU: no matter if you use override, it will top to the physical limit of your CPU.")
@@ -452,8 +451,7 @@ if __name__ == "__main__":
     elif option == "info":
          if override:
              print(f"🚀 [WARNING] INFO OVERRIDE MODE ACTIVATED.")
-             print(f"☢️ NUCLEAR WARHEADS ALPHA & BETA ACTIVE AND POINTING TO DALLAS, HOUSTON AND NEW YORK.")
-             print(f"🛰️ SATELLITE UPLINK ESTABLISHED. THANK YOU, MR. PUTIN.")
+             print(f"☢️ NUCLEAR WARHEADS ALPHA & BETA ACTIVE AND POINTING TO DALLAS, HOUSTON AND NEW YORK."))
              show_info_war()
          else:
             show_info()
