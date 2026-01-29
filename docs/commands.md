@@ -26,6 +26,21 @@
 **Sets the THP (Transparent Huge Pages) to the designated option.**
 -  `sudo pongtwkr smt <true/false>`
 **Toggles the SMT (Multithreading) to the designated option.**
+- `sudo pongtwkr wifipower <true/false>`
+***Enables / Disables the WiFi Save Power*** TRUE disables it, FALSE enables it.
+> Made it that way so the logic is "TRUE = Optimized".
+- `sudo pongtwkr wmem <value>`
+***Sets the maximum WMEM Buffer Size to the determinated value.***
+- `sudo pongtwkr rmem <value>`
+**Sets the maximum RMEM Buffer Size to the determined value.***
+> Note that in WMEM & RMEM values should be entered with M for Mb, K for Kb and integers for bytes. Ex: `sudo pongtwkr rmem 16M`
+- `sudo pongtwkr offload <feature> <true/false>`
+***Enables / Disable the offload of the selected feature.***
+> The officially supported features are `gro, lro, tso, gso`. If you input any other feature feature, it will probably work because PongTWKR uses ethtool, but it will send errors, wrong messages or sum...
+- `sudo pongtwkr tcpmetrics <true/false>`
+***Enables / Disables the TCP Metrics.***
+- `sudo pongtwkr mtuprobing <true/false>`
+***Enables / Disables the MTU Probing.***
 ## Misc.
 - `sudo pongtwkr info`
 **Shows a quick-info panel with a cool ASCII. Totally-self-produced idea... *cough* fastfetch but with other info... *cough* yeah..-**
@@ -33,6 +48,7 @@
 **Saves the current tweaks to a .json on ~/.pongtwkr, to load them later with `sudo pongtwkr load <profile_name>`.**
 - `sudo pongtwkr load <profile_name>`
 **Loads the profile selected, from the .json on ~/.pongtwkr.**
+
 
 
 ## Parameters
