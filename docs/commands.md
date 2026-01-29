@@ -1,5 +1,7 @@
 # Command & Parameter list.
-
+# NEW MEGA EPIC USEFULL COMMAND:
+- `sudo pongtwkr persist`
+**Makes the current settings persist after reboot.**
 ## Tweaking
 - `sudo pongtwkr swappiness <value>`
 **Changes the swappiness of the system to the designated value.**
@@ -16,7 +18,7 @@
 -  `sudo pongtwkr cpumax <value_in_GHz>`
 **Sets the CPU maximum frequency to the designated value.**
 > Please note that the CPU will automatically cap itself: If you have a 3.5GHz CPU, no matter if you run `sudo pongtwkr cpumax 7 override` the CPU will be capped to 3.5GHz.
--  `sudo pongtwkr cpuboost <true/false>`
+-  `sudo pongtwkr cputurbo <true/false>`
 **Enables/Disables Intel Turbo Boost or AMD Precision Boost depending on your system.**
 -  `sudo pongtwkr hugepages <count>`
 **Sets the HugePages to the designated number.**
@@ -27,6 +29,11 @@
 ## Misc.
 - `sudo pongtwkr info`
 **Shows a quick-info panel with a cool ASCII. Totally-self-produced idea... *cough* fastfetch but with other info... *cough* yeah..-**
+- `sudo pongtwkr save <profile_name>`
+**Saves the current tweaks to a .json on ~/.pongtwkr, to load them later with `sudo pongtwkr load <profile_name>`.**
+- `sudo pongtwkr load <profile_name>`
+**Loads the profile selected, from the .json on ~/.pongtwkr.**
+
 
 ## Parameters
 - `sudo pongtwkr <command> info`
