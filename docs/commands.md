@@ -44,6 +44,10 @@
 ## Misc.
 - `sudo pongtwkr info`
 **Shows a quick-info panel with a cool ASCII. Totally-self-produced idea... *cough* fastfetch but with other info... *cough* yeah..-**
+- `sudo pongtwkr reset`
+**Resets all the tweaked values to the ones that were setted when the first command EVER was ran.**
+- `sudo pongtwkr safe`
+**Sets all the parameters to safe options that won't harm any system.**
 - `sudo pongtwkr save <profile_name>`
 **Saves the current tweaks to a .json on ~/.pongtwkr, to load them later with `sudo pongtwkr load <profile_name>`.**
 - `sudo pongtwkr load <profile_name>`
