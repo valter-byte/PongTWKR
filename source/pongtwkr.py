@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# PongTWKR v0.4 - A simple system tweaker for Linux systems.
+# PongTWKR v0.5 - A simple system tweaker for Linux systems.
 # Author: valter-byte (and copilot ty ty for saving me from my crashouts at 3am)
 # License: GLP-3.0
 # uhm yeah ik its messy but idc
@@ -17,12 +17,113 @@ except ImportError:
 import os
 import datetime
 import subprocess
+import json
+# -- Persistence Module --
+def enable_persistence():
+    save_profile("persistent_settings")
+    service_path = "/etc/systemd/system/pongtwkr.service"
+    script_path = os.path.abspath(sys.argv[0])
+    current_user = os.environ.get('SUDO_USER') or os.environ.get('USER') or "root"
+    
+    service_content = f"""[Unit]
+Description=PongTWKR Persistence Service
+After=multi-user.target
+
+[Service]
+Type=oneshot
+User=root
+Environment=SUDO_USER={current_user}
+ExecStart=/usr/bin/python3 {script_path} load persistent_settings
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+"""
+    try:
+        with open(service_path, "w") as f:
+            f.write(service_content)
+        subprocess.run(["systemctl", "daemon-reload"], check=True)
+        subprocess.run(["systemctl", "enable", "pongtwkr.service"], check=True)
+        print(f"✅ Persistence enabled for user: {current_user}")
+        log_change("Persistence service enabled successfully.")
+    except Exception as e:
+        print(f"⚠️ Error: {e}")
+
+# fuck thp, heres the "translator"
+def clean_thp_value(raw):
+    if "[" in raw and "]" in raw:
+        return raw.split("[")[1].split("]")[0].strip()
+    return raw.strip()
+
+# -- Profile saving/loading --
+def save_profile(name):
+    def read_file(path):
+        try:
+            with open(path) as f:
+                return f.read().strip()
+        except:
+            return "N/A"
+
+    profile = {
+        "swappiness": read_file("/proc/sys/vm/swappiness"),
+        "dirty_ratio": read_file("/proc/sys/vm/dirty_ratio"),
+        "dirty_background": read_file("/proc/sys/vm/dirty_background_ratio"),
+        "cache_pressure": read_file("/proc/sys/vm/vfs_cache_pressure"),
+        "governor": read_file("/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor"),
+        "cpu_min": read_file("/sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq"),
+        "cpu_max": read_file("/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq"),
+        "turbo_status_intel": read_file("/sys/devices/system/cpu/intel_pstate/no_turbo"),
+        "turbo_status_amd": read_file("/sys/devices/system/cpu/cpufreq/boost"),
+        "smt": read_file("/sys/devices/system/cpu/smt/control"),
+        "hugepages": read_file("/proc/sys/vm/nr_hugepages"),
+        "thp": clean_thp_value(read_file("/sys/kernel/mm/transparent_hugepage/enabled"))
+
+    }
+
+    path = os.path.join(log_dir, f"{name}.json")
+    with open(path, "w") as f:
+        json.dump(profile, f, indent=4)
+    print(f"✅ Profile '{name}' saved at {path}")
+    log_change(f"Profile {name} saved")
+
+def load_profile(name):
+    path = os.path.join(log_dir, f"{name}.json")
+    if not os.path.exists(path):
+        print(f"⚠️ Profile '{name}' not found.")
+        return
+    with open(path) as f:
+        profile = json.load(f)
+
+    if "swappiness" in profile: set_swappiness(profile["swappiness"])
+    if "dirty_ratio" in profile: set_dirty_ratio(profile["dirty_ratio"])
+    if "dirty_background" in profile: set_dirty_background_ratio(profile["dirty_background"])
+    if "cache_pressure" in profile: set_cache_pressure(profile["cache_pressure"])
+    if "governor" in profile: set_governor(profile["governor"])
+    if "cpu_min" in profile: set_cpu_min_freq(float(profile["cpu_min"]) / 1_000_000)
+    if "cpu_max" in profile: set_cpu_max_freq(float(profile["cpu_max"]) / 1_000_000)
+    if "turbo_status_intel" in profile or "turbo_status_amd" in profile:
+        set_cputurbo("true" if profile.get("turbo_status_amd") == "1" or profile.get("turbo_status_intel") == "0" else "false")
+    if "smt" in profile: set_smt("true" if profile["smt"] == "on" else "false")
+    if "hugepages" in profile: set_hugepages(profile["hugepages"])
+    if "thp" in profile:
+        set_thp(clean_thp_value(profile["thp"]))
+
+    print(f"✅ Profile '{name}' applied")
+    log_change(f"Profile {name} applied")
+
 #-- Log making --
-real_user = os.environ.get('SUDO_USER') or os.environ.get('USER')
-if real_user:
-    log_dir = f"/home/{real_user}/.pongtwkr"
-else:
-    log_dir = os.path.expanduser("~/.pongtwkr")
+def find_real_user():
+    user = os.environ.get('SUDO_USER') or os.environ.get('USER')
+    if user and user != 'root':
+        return user
+    try:
+        users = [d for d in os.listdir('/home') if os.path.isdir(os.path.join('/home', d)) and d != 'lost+found']
+        if users: return users[0]
+    except: pass
+    return 'root'
+real_user = find_real_user()
+log_dir = f"/home/{real_user}/.pongtwkr" if real_user != 'root' else "/root/.pongtwkr"
+
 if not os.path.exists(log_dir):
     os.makedirs(log_dir, exist_ok=True)
 log_file = os.path.join(log_dir, "logs.txt")
@@ -321,10 +422,15 @@ def set_cpu_max_freq(value):
     print(f"✅ CPU max freq set to {ghz:.2f} GHz ({khz} kHz)")
     log_change(f"CPU max freq set to {ghz:.2f} GHz")
 
-# --- Reset defaults ---
+# --- Reset defaults --
 defaults = {}
 def save_defaults():
-    for param, path in {
+    defaults_path = os.path.join(log_dir, "original_defaults.json")
+    if os.path.exists(defaults_path):
+        return
+    
+    print("📦 First run detected! Backing up your original system defaults...")
+    paths = {
         "swappiness": "/proc/sys/vm/swappiness",
         "dirtyratio": "/proc/sys/vm/dirty_ratio",
         "dirtybackground": "/proc/sys/vm/dirty_background_ratio",
@@ -333,35 +439,62 @@ def save_defaults():
         "cputurbo_amd": "/sys/devices/system/cpu/cpufreq/boost",
         "smt": "/sys/devices/system/cpu/smt/control",
         "hugepages": "/proc/sys/vm/nr_hugepages",
-                                                  # <-- here would go THP, but f*ck it
+        "thp": "/sys/kernel/mm/transparent_hugepage/enabled"
+    }
 
-    }.items():
+    original_data = {}
+    for param, path in paths.items():
         try:
-            with open(path) as f:
-                defaults[param] = f.read().strip()
-        except:
-            defaults[param] = None
+            if os.path.exists(path):
+                with open(path) as f:
+                    raw_val = f.read().strip()
+                    if param == "thp":
+                        original_data[param] = clean_thp_value(raw_val)
+                    else:
+                        original_data[param] = raw_val
+            else:
+                original_data[param] = None
+        except Exception as e:
+            print(f"⚠️ Could not backup {param}: {e}")
+            original_data[param] = None
+
+    # Guardamos el búnker en un JSON
+    try:
+        with open(defaults_path, "w") as f:
+            json.dump(original_data, f, indent=4)
+        print(f"✅ Backup created successfully at {defaults_path}")
+    except Exception as e:
+        print(f"❌ FATAL ERROR: Could not save defaults JSON: {e}")
 
 def reset_defaults():
-    for param, path in {
-        "swappiness": "/proc/sys/vm/swappiness",
-        "dirtyratio": "/proc/sys/vm/dirty_ratio",
-        "dirtybackground": "/proc/sys/vm/dirty_background_ratio",
-        "cachepressure": "/proc/sys/vm/vfs_cache_pressure",
-        "cputurbo_intel": "/sys/devices/system/cpu/intel_pstate/no_turbo",
-        "cputurbo_amd": "/sys/devices/system/cpu/cpufreq/boost",
-        "smt": "/sys/devices/system/cpu/smt/control",
-        "hugepages": "/proc/sys/vm/nr_hugepages",
+    defaults_path = os.path.join(log_dir, "original_defaults.json")
+    if not os.path.exists(defaults_path):
+        print("⚠️ Error: No original defaults found. So... just run sudo pongtwkr safe...")
+        return
+    with open(defaults_path) as f:
+        original_data = json.load(f)
+    actions = {
+        "swappiness": set_swappiness,
+        "dirtyratio": set_dirty_ratio,
+        "dirtybackground": set_dirty_background_ratio,
+        "cachepressure": set_cache_pressure,
+        "smt": set_smt,
+        "hugepages": set_hugepages,
+        "thp": set_thp
+    }
 
-    }.items():
-        if defaults.get(param) is not None:
-            try:
-                with open(path, "w") as f:
-                    f.write(defaults[param])
-                print(f"✅ {param} reset to {defaults[param]}")
-                log_change(f"{param} reset to {defaults[param]}")
-            except Exception as e:
-                print(f"⚠️ Could not reset {param}: {e}")
+    print("🔄 [RESET] Restoring system to default settings...")
+    for param, val in original_data.items():
+        if val is not None and val != "N/A":
+            if param in actions:
+                actions[param](val)
+            elif param == "cputurbo_intel" and val is not None:
+                set_cputurbo("true" if val == "0" else "false")
+            elif param == "cputurbo_amd" and val is not None:
+                set_cputurbo("true" if val == "1" else "false")
+
+    print("✅ System successfully restored to the first-run state.")
+
 
 # --- Safe profile ---
 def safe_profile():
@@ -554,10 +687,19 @@ if __name__ == "__main__":
         sys.exit(1)
 
     option = sys.argv[1]
+    
+    # Definimos qué opciones requieren obligatoriamente un segundo argumento (sys.argv[2])
+    needs_value = [
+        "swappiness", "cputurbo", "smt", "governor", "thp", 
+        "dirtyratio", "dirtybackground", "cachepressure", 
+        "hugepages", "cpumin", "cpumax", "save", "load"
+    ]
 
-    if len(sys.argv) == 3 and sys.argv[2] == "info":
-        show_param_info(option)
-        sys.exit(0)
+    # Validación global de argumentos para comandos que requieren valor
+    if option in needs_value and len(sys.argv) < 3:
+        print(f"⚠️ Error: The option '{option}' requires a value.")
+        print(f"Usage: sudo pongtwkr {option} <value>")
+        sys.exit(1)
 
     # Override kinda
     option = sys.argv[1]
@@ -635,6 +777,24 @@ if __name__ == "__main__":
              show_info_war()
          else:
             show_info()
+    elif option == "save": 
+        if len(sys.argv) < 3: 
+            print("⚠️ Please provide a profile name.") 
+        elif sys.argv[2] == "persistent_settings" or sys.argv[2] == "original_defaults":
+            print("❌ Yeah bro... that name is reserved.")
+        else: 
+            save_profile(sys.argv[2]) 
+
+    elif option == "load": 
+        if len(sys.argv) < 3: 
+            print("⚠️ Please provide a profile name.") 
+        elif sys.argv[2] == "persistent_settings" or sys.argv[2] == "original_defaults":
+            if os.getuid() != 0: # <-- useless security method that only works on sum distros
+                print("❌ Yeah bro... that name is reserved for system persistence.")
+            else:
+                load_profile(sys.argv[2])
+        else: 
+            load_profile(sys.argv[2])
 
     elif option == "reset":
         reset_defaults()
@@ -644,7 +804,7 @@ if __name__ == "__main__":
 
     elif option == "ping":
         ping_test()
-
+    elif option == "persist":
+        enable_persistence()
     else:
         print("⚠️ Unknown option or bad usage. Please refer to the documentation for further help.")
-
