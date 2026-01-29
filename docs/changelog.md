@@ -1,6 +1,17 @@
 # CHANGELOG 
 ## Here will go the changes added to the tweaker. 
+# v0.5 "Profiled"
+> The name is a lie. It's more a hotfix than a "Profiles" update.
 
+### New Features
+- ***Added profile management*** saving .json on the .pongtwkr directorie, with `sudo pongtwkr save <name>` & `sudo pongtwkr load <name>`
+- ***Added tweaks persistency*** now tweaks persist after reboots, with `sudo pongtwkr persist`
+
+### Fixes
+> The first bugfixes... were needed.
+- ***Fixed using a command without value making the script crash*** *(`sudo pongtwkr swappiness` or `sudo pongtwkr dirtyratio`, for example)*
+- ***Fixed `sudo pongtwkr reset*** working partially
+- ***General tweaks and fixes to the code. (yk)***
 # v0.4 "More Tweaks"
 > I mean, who doesnt love being able to change your HugePages with just a command line?
 
