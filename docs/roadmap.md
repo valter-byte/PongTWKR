@@ -1,10 +1,6 @@
 # Roadmap for first semester of 2026:
 ## ROADMAP! TO 1.0 WE GO!
-- v0.4 — “More Tweaks” 📌 **Here we are.**
-- ## v0.5 — “Profiled”
-  - Presets
-  - Custom profiles that you can create and apply
-  - ***Persistency: here, the changes will not reset after each reeboot.***
+- v0.5 — “Profiled” 📌 **Here we are.**
 - ## v0.6 — “Wifi‑ed”
   - Adittion of network tweaks.
   - Info panel showing network stats
