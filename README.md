@@ -2,7 +2,7 @@
 The objective of PongTWKR is to be an easy-to-use, handy tool for tweaking CPU, RAM, and other PC components like Swappiness, governor, etc. easily, without having to confront the terminal or shady directories. Please note that this program is targeted for those that can't/don't want to mess with commands or files on their Linux Distro, but want to get overall better performance.
 
 # How to use?
-Well, as for January 29, 2026, PongTWKR is still on early development. v0.5. It is a simple CLI program that makes it easier to make changes/tweaks to CPU/RAM configurations, such as governor, dirty_ratio, etc. Just install (Move pongtwkr.py to /usr/local/bin, /usr/bin or any other PATH directorie) and use it by the terminal!
+Well, as for January 29, 2026, PongTWKR is still on early development. v0.6. It is a simple CLI program that makes it easier to make changes/tweaks to CPU/RAM configurations, such as governor, dirty_ratio, etc. Just install (Move pongtwkr.py to /usr/local/bin, /usr/bin or any other PATH directorie) and use it by the terminal!
 
 # Questions? Bugs? You broke your computer?
 Tell me, and please send me a screenshot of ***ANY*** error/bug.
