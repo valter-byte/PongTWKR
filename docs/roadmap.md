@@ -1,9 +1,6 @@
 # Roadmap for first semester of 2026:
 ## ROADMAP! TO 1.0 WE GO!
-- v0.5 — “Profiled” 📌 **Here we are.**
-- ## v0.6 — “Wifi‑ed”
-  - Adittion of network tweaks.
-  - Info panel showing network stats
+- v0.6 — “Wifi-ed” 📌 **Here we are.**
 - ## v0.7 — “Rammed”
   - Advanced tweaks for RAM (zram, zswap, etc.)
 - ## v0.8 — “Graphed”
