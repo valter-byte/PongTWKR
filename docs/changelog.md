@@ -1,5 +1,15 @@
 # CHANGELOG 
 ## Here will go the changes added to the tweaker. 
+# v0.6 "Wifi-ed"
+> This update came surprisingly before I expected.
+
+### New Features
+- ***Addded TCP Metrics, MTU Probing, WiFi Powersave, Offloading toggle, RMEM and WMEM Buffer support.***
+- ***Revamped the ASCII on `sudo pongtwkr info`***
+- ***Added network data to `sudo pongtwkr info`***
+- ***General tweaks and fixes to the code***
+
+  
 # v0.5 "Profiled"
 > The name is a lie. It's more a hotfix than a "Profiles" update.
 
