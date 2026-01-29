@@ -1,4 +1,15 @@
-# ENTRY 3 | January 28, 2026, 00:40 A.M
+# ENTRY 4 | January 29, 2026, 3:42 A.M
+Uhum. Yeah... I didn't sleep. I was about to turn off the computer when I saw the roadmap and thought... "well, it can't be too hard to rush this, right?" I was right, apparentely. 3 hours passed and I've completed v0.6 adding even more tweaks than I was originally going to do: I only was planning to add TCP Metrics, WiFi Powersave and MTU Probing, and I ended up adding Buffer (RMEM and WMEM) and Offloading tweaks. Cool, right?
+
+When fixing bugs, I tried to add things such as Packet Loss, WiFi Speed, DNS, etc. to `sudo pongtwkr info` because of the rush of the moment, and I've ended up making it go from a fast, easy to read command to a monster that delayed 11s to display info. Of course this wasn't added to the final version of v0.6...
+
+I've also **ALMOST** forgot to add the new features to the Profile support. I've realised just before clicking commit changes...
+
+Anyways, now, yeah, I'm heading to sleep... See ya.
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+# ENTRY 3 | January 29, 2026, 00:40 A.M
 So crap... v0.5 is here now. Oh lord... This was the first "obstacle" in developing, making persistent changes with systemd. Oh, and THP, f*ck THP and how it saves in the Kernel. Had to do a whole "translator" from Kernel to CLI and from CLI to Kernel.
 
 Excluding persistency and THP, profiles were easy: just `import json` and I was done. Oh, and I made my promise of fixing THP. In less than 7 hours...
