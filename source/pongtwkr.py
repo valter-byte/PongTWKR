@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# PongTWKR v0.6 - A simple system tweaker for Linux systems.
+# PongTWKR v0.7 - A simple system tweaker for Linux systems.
 # Author: valter-byte (and copilot ty ty for saving me from my crashouts at 3am)
 # License: GLP-3.0
 # uhm yeah ik its messy but idc
@@ -18,10 +18,24 @@ import os
 import datetime
 import subprocess
 import json
-c1 = "\033[38;5;242m" # Gris rancio
-c2 = "\033[38;5;248m" # Gris medio
-c3 = "\033[38;5;255m" # Blanco Mente Fría
-rs = "\033[0m"        # Reset (Sybau!)
+
+# had to do ts cause kernel issues yk
+def read_file_force(path):
+    if not os.path.exists(path):
+        return "0"
+    try:
+        subprocess.run(["sudo", "chmod", "644", path], check=True, capture_output=True)
+        with open(path, "r") as f:
+            val = f.read().strip()
+        subprocess.run(["sudo", "chmod", "600", path], check=True, capture_output=True)
+        return val if val else "0"
+    except:
+        return "0"
+
+c1 = "\033[38;5;242m" 
+c2 = "\033[38;5;248m" 
+c3 = "\033[38;5;255m"
+rs = "\033[0m"        
 # -- Persistence Module --
 def enable_persistence():
     save_profile("persistent_settings")
@@ -105,7 +119,15 @@ def save_profile(name):
         "wifi_powersave": get_wifi_status_raw(),
         "offload_gro": get_offload_status_raw("generic-receive-offload"),
         "offload_tso": get_offload_status_raw("tcp-segmentation-offload"),
-        "offload_gso": get_offload_status_raw("generic-segmentation-offload")
+        "offload_gso": get_offload_status_raw("generic-segmentation-offload"),
+        "zram_algo": clean_thp_value(read_file("/sys/block/zram0/comp_algorithm")),
+        "zram_size": read_file("/sys/block/zram0/disksize"),
+        "zram_streams": read_file("/sys/block/zram0/max_comp_streams"),
+        "zswap_enabled": "true" if read_file("/sys/module/zswap/parameters/enabled") == "Y" else "false",
+        "zswap_algo": read_file("/sys/module/zswap/parameters/compressor"),
+        "zswap_pool": read_file("/sys/module/zswap/parameters/max_pool_percent"),
+        "numa_balancing": "true" if read_file("/proc/sys/kernel/numa_balancing") == "1" else "false"
+
     }
 
     path = os.path.join(log_dir, f"{name}.json")
@@ -147,6 +169,13 @@ def load_profile(name):
     if "offload_gro" in profile: set_offload("gro", "true" if profile["offload_gro"] == "on" else "false")
     if "offload_tso" in profile: set_offload("tso", "true" if profile["offload_tso"] == "on" else "false")
     if "offload_gso" in profile: set_offload("gso", "true" if profile["offload_gso"] == "on" else "false")
+    if "zram_algo" in profile: set_zramalgo(profile["zram_algo"])
+    if "zram_size" in profile: set_zramsize(profile["zram_size"]) 
+    if "zram_streams" in profile: set_zramstreams(profile["zram_streams"])
+    if "zswap_enabled" in profile: set_zswap_enabled(profile["zswap_enabled"])
+    if "zswap_algo" in profile: set_zswap_algo(profile["zswap_algo"])
+    if "zswap_pool" in profile: set_zswap_pool(profile["zswap_pool"])
+    if "numa_balancing" in profile: set_numa_balancing(profile["numa_balancing"])
 
     print(f"✅ Profile '{name}' applied")
     log_change(f"Profile {name} applied")
@@ -236,8 +265,242 @@ which allows the CPU to run at higher frequencies under certain conditions for i
     "wifipower": "Wifi power management allows the system to save power by reducing the power consumption of wifi interfaces when not in use.",
     "mtuprobing": "MTU probing helps optimize network performance by dynamically adjusting the Maximum Transmission Unit (MTU) size based on network conditions.",
     "rmem": "Sets the maximum receive buffer size for network sockets, which can improve network performance for high-throughput applications.",
-    "wmem": "Sets the maximum send buffer size for network sockets, which can improve network performance for high-throughput applications."
+    "wmem": "Sets the maximum send buffer size for network sockets, which can improve network performance for high-throughput applications.",
+    "numa": "NUMA Balancing allows the kernel to automatically manage memory allocation across NUMA nodes, improving performance for applications that use large amounts of memory on NUMA systems.",
+    "zswappools": "Sets the maximum pool percentage for ZSWAP, which is a compressed cache for swap pages in RAM, improving performance for systems that use swap memory.",
+    "zswapalgo": "Sets the compression algorithm for ZSWAP, which is a compressed cache for swap pages in RAM, improving performance for systems that use swap memory.",
+    "zswapenabled": "Enables or disables ZSWAP, which is a compressed cache for swap pages in RAM, improving performance for systems that use swap memory.",
+    "zramstreams": "Sets the number of compression streams for ZRAM, which is a compressed block device in RAM used for swap memory, improving performance for systems that use swap memory.",
+    "zramsize": "Sets the size of the ZRAM block device, which is a compressed block device in RAM used for swap memory, improving performance for systems that use swap memory.",
+    "zramalgo": "Sets the compression algorithm for ZRAM, which is a compressed block device in RAM used for swap memory, improving performance for systems that use swap memory."
+
 }
+# numa balancing:
+def set_numa_balancing(state):
+    path = "/proc/sys/kernel/numa_balancing"
+    if not os.path.exists(path):
+        print("⚠️ NUMA Balancing not supported by your CPU/Kernel.")
+        return
+    s = str(state).lower()
+    if s in ["true", "on", "1", "y", "yes", "enable"]:
+        val = "1"
+        msg = "ENABLED"
+    elif s in ["false", "off", "0", "n", "no", "disable"]:
+        val = "0"
+        msg = "DISABLED"
+    else:
+        print(f"⚠️ Invalid value '{state}' for NUMA Balancing. Must be 'true' or 'false'")
+        return
+
+    try:
+        with open(path, "w") as f:
+            f.write(val)
+        print(f"✅ NUMA Balancing is now {msg}.")
+        log_change(f"NUMA Balancing set to {val}")
+    except PermissionError:
+        print("⚠️ Please run with SUDO")
+    except Exception as e:
+        print(f"❌ ERROR: {e}")
+# here starts ZSWAP
+# zswap pools
+def set_zswap_pool(percent):
+    path = "/sys/module/zswap/parameters/max_pool_percent"
+    if not os.path.exists(path):
+        print("⚠️ ZSWAP Pool management not available on this system.")
+        return
+    try:
+        with open(path, "w") as f:
+            f.write(str(percent))
+        print(f"✅ ZSWAP Max Pool set to {percent}%")
+        log_change(f"ZSWAP Max Pool set to {percent}%")
+    except PermissionError:
+        print("⚠️ Please run with SUDO")
+    except Exception as e:
+        print(f"❌ ERROR: {e}")
+# zswap algos
+def set_zswap_algo(algo):
+    path_algo = "/sys/module/zswap/parameters/compressor"
+    path_available = "/sys/kernel/debug/zswap/available_compressors"  
+    if not os.path.exists(path_algo):
+        print("⚠️ ZSWAP not available or not enabled in Kernel.")
+        return
+    algo = algo.lower().strip()
+    available = []
+    if os.path.exists(path_available):
+        try:
+            with open(path_available, "r") as f:
+                available = f.read().strip().split()
+        except PermissionError:
+            pass 
+    if available and algo not in available:
+        print(f"⚠️ Invalid ZSWAP algo '{algo}'. Available: {', '.join(available)}")
+        return
+    try:
+        with open(path_algo, "w") as f:
+            f.write(algo)
+        print(f"✅ ZSWAP Compressor set to {algo}")
+    except OSError:
+        print(f"❌ ERROR: Algorithm '{algo}' is not supported by your Kernel. (Check /sys/kernel/debug/zswap/available_compressors) ")
+
+    except PermissionError:
+        print("⚠️ Please run with SUDO")
+    except Exception as e:
+        print(f"❌ ERROR: {e}")
+# -- zswap enable/disable --
+def set_zswap_enabled(state):
+    path = "/sys/module/zswap/parameters/enabled"
+    if not os.path.exists(path):
+        print("⚠️ ZSWAP not supported by your Kernel...")
+        return
+    s = str(state).lower()
+    if s in ["true", "on", "1", "y", "yes"]:
+        val = "Y"
+        msg = "ENABLED"
+    elif s in ["false", "off", "0", "n", "no"]:
+        val = "N"
+        msg = "DISABLED"
+    else:
+        print(f"⚠️ '{state}' Is not a valid state. Please use true/false")
+        return
+    try:
+        with open(path, "w") as f:
+            f.write(val)
+        print(f"✅ ZSWAP is now {msg}.")
+        log_change(f"ZSWAP enabled set to {val}")
+    except PermissionError:
+        print("⚠️ Please run with SUDO")
+    except Exception as e:
+        print(f"❌ ERROR: {e}")
+# here is size
+def set_zramsize(new_size):
+    path_reset = "/sys/block/zram0/reset"
+    path_algo = "/sys/block/zram0/comp_algorithm"
+    path_size = "/sys/block/zram0/disksize"
+
+    if not os.path.exists(path_size):
+        print("⚠️ ZRAM not available.")
+        return
+
+    size_bytes = parse_size_2(new_size) 
+    if size_bytes is None: return
+
+    try:
+        with open(path_algo, "r") as f:
+            current_algo = f.read().split('[')[1].split(']')[0] # <another shitty kernell translator.
+        subprocess.run(["swapoff", "/dev/zram0"], stderr=subprocess.DEVNULL)
+
+        with open(path_reset, "w") as f:
+            f.write("1")
+        with open(path_algo, "w") as f:
+            f.write(current_algo)
+        with open(path_size, "w") as f:
+            f.write(str(size_bytes))
+        subprocess.run(["mkswap", "/dev/zram0"], check=True, capture_output=True)
+        subprocess.run(["swapon", "/dev/zram0", "-p", "100"], check=True, capture_output=True)
+        print(f"✅ ZRAM Resized to {new_size} ({size_bytes} bytes).")
+        log_change(f"ZRAM Resized to {new_size}")
+
+    except Exception as e:
+        print(f"❌ ERROR:{e}")
+# decided to make a parse_size_2 cuz yk it was easier to make a new one instead of updating the old one
+
+def parse_size_2(value):
+    try:
+        val = str(value).strip().lower()
+        if val.endswith("kb"):
+            return int(val[:-2]) * 1024
+        elif val.endswith("mb"):
+            return int(val[:-2]) * 1024 * 1024
+        elif val.endswith("gb"):
+            return int(val[:-2]) * 1024 * 1024 * 1024
+        elif val.endswith("k"):
+            return int(val[:-1]) * 1024
+        elif val.endswith("m"):
+            return int(val[:-1]) * 1024 * 1024
+        elif val.endswith("g"):
+            return int(val[:-1]) * 1024 * 1024 * 1024
+        else:
+            return int(val)
+    except ValueError:
+        print("⚠️ Error: Size must be an integer or end with K/M/G/KB/MB/GB. (Ex. 256K, 4M, 4G, 1048576)")
+        return None
+# HERE IT GOES: zramalgo
+def set_zramalgo(algo):
+    path = "/sys/block/zram0/comp_algorithm"
+    if not os.path.exists(path):
+        print("⚠️ ZRAM algos not available on this system.")
+        return
+    try:
+        with open(path, "r") as f:
+            available = [a.replace("[", "").replace("]", "") for a in f.read().strip().split()]
+        if algo not in available:
+            print(f"⚠️ Invalid algorithm '{algo}'. Available: {', '.join(available)}")
+            return
+    except Exception as e:
+        print(f"⚠️ Could not read available algorithms: {e}")
+        return
+    try:
+        # preserve size
+        with open("/sys/block/zram0/disksize", "r") as f:
+            current_size = f.read().strip()
+        # checking it out ykyk
+        try:
+            active_swaps = subprocess.check_output(["swapon", "--show"]).decode()
+            if "/dev/zram0" in active_swaps:
+                subprocess.run(["swapoff", "/dev/zram0"], check=True)
+        except subprocess.CalledProcessError:
+            print("⚠️ Warning: swapoff failed, maybe not active. Continuing...")
+        # clean reset
+        with open("/sys/block/zram0/reset", "w") as f:
+            f.write("1")
+        with open("/sys/block/zram0/comp_algorithm", "w") as f:
+            f.write(algo)
+        with open("/sys/block/zram0/disksize", "w") as f:
+            f.write(current_size)
+        # re-make swap
+        subprocess.run(["mkswap", "/dev/zram0"], check=True)
+        subprocess.run(["swapon", "/dev/zram0", "-p", "100"], check=True)
+        print(f"✅ ZRAM Algorithm set to {algo} (Size {current_size} preserved).")
+        log_change(f"ZRAM Algorithm set to {algo}")
+    except PermissionError:
+        print("⚠️ Error: Please use SUDO.")
+    except Exception as e:
+        print(f"❌ ERROR: Something went wrong: {e}")
+# streams thingy
+def set_zramstreams(streams):
+    path = "/sys/block/zram0/max_comp_streams"
+    if not os.path.exists(path):
+        print("⚠️ ZRAM streams not available on this system.")
+        return
+    if isinstance(streams, str) and streams.lower() == "all":
+        val = 0
+    else:
+        try:
+            val = int(streams)
+        except ValueError:
+            print("⚠️ Error: streams must be an integer or 'all'.")
+            return
+    if val == 0 and (isinstance(streams, str) and streams != "all"):
+        print("⚠️ Error: value should be more than 0. Use 'all' if you want auto mode.")
+        return
+    max_streams = psutil.cpu_count(logical=True)
+    if val > max_streams:
+        print(f"⚠️ Warning: streams capped to {max_streams} (CPU thread count).")
+        val = max_streams
+    try:
+        with open(path, "w") as f:
+            f.write(str(val))
+        if val == 0:
+            print("✅ ZRAM compression streams set to auto (all cores).")
+            log_change("ZRAM compression streams set to auto (all cores)")
+        else:
+            print(f"✅ ZRAM compression streams set to {val}")
+            log_change(f"ZRAM compression streams set to {val}")
+    except PermissionError:
+        print("⚠️ Error: Please use SUDO.")
+    except Exception as e:
+        print(f"❌ ERROR: Something went wrong: {e}")
+
 # wifi detection, made this so future updates are easier
 def get_wifi_interfaces():
     interfaces = []
@@ -656,7 +919,14 @@ def save_defaults():
         "thp": "/sys/kernel/mm/transparent_hugepage/enabled",
         "tcpmetrics": "/proc/sys/net/ipv4/tcp_no_metrics_save", "mtuprobing": "/proc/sys/net/ipv4/tcp_mtu_probing", 
         "rmem_max": "/proc/sys/net/core/rmem_max",
-        "wmem_max": "/proc/sys/net/core/wmem_max"
+        "wmem_max": "/proc/sys/net/core/wmem_max",
+        "zram_algo":   "/sys/block/zram0/comp_algorithm",
+        "zram_size":   "/sys/block/zram0/disksize",
+        "zram_streams": "/sys/block/zram0/max_comp_streams",
+        "zswap_enabled": "/sys/module/zswap/parameters/enabled",
+        "zswap_algo": "/sys/module/zswap/parameters/compressor",
+        "zswap_pool": "/sys/module/zswap/parameters/max_pool_percent",
+        "numa_balancing": "/proc/sys/kernel/numa_balancing"
     }
 
     original_data = {}
@@ -699,7 +969,14 @@ def reset_defaults():
         "tcpmetrics": set_tcp_metrics,
         "mtuprobing": set_mtu_probing, 
         "rmem_max": set_rmem, 
-        "wmem_max": set_wmem
+        "wmem_max": set_wmem,
+        "zram_algo": set_zramalgo,
+        "zram_size": set_zramsize,
+        "zram_streams": set_zramstreams,
+        "zswap_enabled": set_zswap_enabled,
+        "zswap_algo": set_zswap_algo,
+        "zswap_pool": set_zswap_pool,
+        "numa_balancing": set_numa_balancing
     }
 
     print("🔄 [RESET] Restoring system to default settings...")
@@ -730,6 +1007,13 @@ def safe_profile():
     set_mtu_probing("off")
     set_rmem("212992")
     set_wmem("212992")
+    set_zswap_enabled("true")
+    set_zswap_algo("lz4")
+    set_zramalgo("lz4")
+    set_zramsize("1G")
+    set_zramstreams("all")
+    set_numa_balancing("true")
+    set_zswap_pool("20")
     print("✅ Safe profile applied")
     log_change("Safe profile applied")
 
@@ -823,6 +1107,12 @@ def show_info():
     mtu_probing = read_file("/proc/sys/net/ipv4/tcp_mtu_probing")
     rmem_max = read_file("/proc/sys/net/core/rmem_max")
     wmem_max = read_file("/proc/sys/net/core/wmem_max")
+    zram_algo = clean_thp_value(read_file("/sys/block/zram0/comp_algorithm"))
+    zram_streams = read_file("/sys/block/zram0/max_comp_streams")
+    zswap_enabled = "true" if read_file("/sys/module/zswap/parameters/enabled") == "Y" else "false"
+    zswap_algo = read_file("/sys/module/zswap/parameters/compressor")
+    zswap_pool = read_file("/sys/module/zswap/parameters/max_pool_percent")
+    numa_balancing = "true" if read_file("/proc/sys/kernel/numa_balancing") == "1" else "false"
     try:
         wifi_power = subprocess.check_output(["iw", "dev", "wlan0", "get", "power_save"]).decode().strip()
     except:
@@ -891,6 +1181,10 @@ def show_info():
 
     # --- ASCII Pong + Logo ---
     ascii_art = r"""
+
+
+
+
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║╔════════════════════════════════════════════════════════════════════════════╗║
 ║║                         ██████╗     |   ██╗  ██╗                           ║║
@@ -915,6 +1209,13 @@ def show_info():
 ║║                                     |                                      ║║
 ║╚════════════════════════════════════════════════════════════════════════════╝║
 ╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+
+
+
+
+
 {c1}$$$$$$$\   $$$$$$\  $$\   $$\  $$$$$$\ $$$$$$$$\ $$\      $$\ $$\   $$\ $$$$$$$\  
 {c1}$$  __$$\ $$  __$$\ $$$\  $$ |$$  __$$\\__$$  __|$$ | $\  $$ |$$ | $$  |$$  __$$\ 
 {c2}$$ |  $$ |$$ /  $$ |$$$$\ $$ |$$ /  \__|  $$ |   $$ |$$$\ $$ |$$ |$$  / $$ |  $$ |
@@ -950,6 +1251,12 @@ def show_info():
         f"📦 rmem_max: {format_bytes(rmem_max)}", 
         f"📦 wmem_max: {format_bytes(wmem_max)}", 
         f"⚙ Wifi Power: {wifi_power}", 
+        f"🌀 ZRAM Compression Algo: {zram_algo}",
+        f"🌀 ZRAM Streams: {zram_streams}",
+        f"🌀 ZSWAP Enabled: {zswap_enabled}",
+        f"🌀 ZSWAP Algo: {zswap_algo}",
+        f"🌀 ZSWAP Pool: {zswap_pool}",
+        f"🌀 NUMA Balancing: {numa_balancing}"
     ]
     # merge ascii and fetch
     ascii_lines = ascii_art.splitlines()
@@ -1086,6 +1393,16 @@ if __name__ == "__main__":
                 val = limit_value("rmem_max", val, 65536, 16777216)
                 if val is not None:
                     set_rmem(val)
+    elif option == "zramsize":
+        if override:
+            set_zramsize(sys.argv[2])
+        else:
+            val = parse_size_2(sys.argv[2])
+            if val is not None:
+                max_safe = psutil.virtual_memory().total * 2
+                val = limit_value("zram_size", val, 134217728, max_safe) 
+                if val is not None:
+                    set_zramsize(val)
 
     elif option == "wmem":
         if override:
@@ -1096,7 +1413,7 @@ if __name__ == "__main__":
                 val = limit_value("wmem_max", val, 65536, 16777216)
                 if val is not None:
                     set_wmem(val)
-    elif option == "offload":
+    elif option == "offload":   
         if len(sys.argv) < 4:
             print("⚠️ Use: pongtwkr offload <feature> <true/false>. Features are: gro, gso, tso, ufo, sg, rx, tx.")
         else:
@@ -1110,14 +1427,45 @@ if __name__ == "__main__":
         set_tcp_metrics(sys.argv[2])
     elif option == "mtuprobing":
         set_mtu_probing(sys.argv[2])
-
+    elif option == "zswapalgo":
+        if len(sys.argv) < 3:
+            print("⚠️ Please provide a zswap algorithm.")
+        else:
+            set_zswap_algo(sys.argv[2])
     elif option == "safe":
         safe_profile()
-
+    elif option == "zramalgo":
+        if len(sys.argv) < 3:
+            print("⚠️ Usage: sudo pongtwkr zramalgo <algorithm>")
+        else:
+            set_zramalgo(sys.argv[2])
+    elif option == "zswap":
+        if len(sys.argv) < 3:
+            print("⚠️ Please choose a value: 'true' or 'false'")
+        else:
+            set_zswap_enabled(sys.argv[2])
+    elif option == "zswappool":
+        if len(sys.argv) < 3:
+            print("⚠️ Please provide a zswap pool percentage (1-50) or a custom pool name.")
+        else:
+            if override:    
+                set_zswap_pool(sys.argv[2])
+            else:
+                try:
+                    val = int(sys.argv[2])
+                    val = limit_value("zswap_pool", val, 1, 50)
+                    if val is not None:
+                        set_zswap_pool(val)
+                except ValueError:
+                    print("⚠️ Error: pool percentage must be an integer.")
+    elif option == "numa":
+        if len(sys.argv) < 3:
+            print("⚠️ Please provide a value: 'true' or 'false'.")
+        else:
+            set_numa_balancing(sys.argv[2])
     elif option == "ping":
         ping_test()
     elif option == "persist":
         enable_persistence()
     else:
         print("⚠️ Unknown option or bad usage. Please refer to the documentation for further help.")
-
