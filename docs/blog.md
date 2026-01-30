@@ -1,3 +1,71 @@
+# Important news. ENTRY 7 | January 30, 2026, 4:36 A.M.
+
+Couldn't sleep. I've been biting my tongue while thinking about v0.8. I might be crazy, but if I do this, PongTWKR will officially stop being a tweaking script and become a BIGGER tool. First, my thought about v0.8, from less-important to blow-minding.
+
+1- `sudo pongtwkr heavyinfo`
+  Remember the issue with info on v0.5, that became slow? Well, I was thinking of adding a bigger and more detailed info cmd that showed lots of info, but of course, lacking the speed of regular info. A CPU-Z, in a single command line.
+
+2- First Official Release and .sh installer
+  With these thoughts I was having, I found it impossible to just skip this. This will give the project more visibility and, it will be easier to use.
+
+3- PongTWKR Modularity
+  Instead of being a single .py script, I was thinking of making .pys for each of the tweaks (CPU, RAM, GPU, Network, etc.) Making it easier to update, debug, fix, and contribute.
+
+4- v0.8 Features.
+  I will be straightforward: call me crazy if you want:
+
+Multi vendor tweaks:
+
+- NVIDIA:
+
+VRAM Overclocking
+Clock Lock
+Fan speed
+Power Limiter
+Drivers (recommended)
+Reset button
+Info
+
+- AMDGPU & Radeon:
+
+Smartshift
+Clock Lock
+Power Profile
+Power Cap
+Performance Level
+VRAM Overclocking
+OverDrive
+Drivers
+Info
+Reset Buttom
+
+- Intel ARC
+
+Frequency lock
+Info
+VRAM Overclocking
+Power Limits
+Reset button
+
+- Generic / Integrated GPUs
+
+RC6 Reneder stnd-by
+FBC
+Video turbo
+Info
+Reset
+
+Hey. I know it seems a little bit too much for a Pre-Alpha version, but... until further news, I'm keeping it that way. Starting tomorrow.
+This entry was just to let you guys know what I'm planning to do. I'll not rush these things (specially NVIDIA & AMD) because drivers can break things. Although I won't release anything without the Reset functions, I won't release anything that doesn't work well.
+
+I'm excited, and thriving to work on v0.8: In my opinion, this will be the most important update in PongTWKR ever: we are betting to go from a Tweaking script to a more advanced Tweaking Toolkit.
+
+I'll sleep with my mind full of thoughts.
+
+See ya.
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
 # ENTRY 6 | January 30, 2026, 03:27 A.M.
 
 Hey there. Feeling a bit better after chilling out some time. Now I'm taking the time to properly update the documentation:
