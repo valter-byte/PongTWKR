@@ -1,5 +1,13 @@
 # CHANGELOG 
-## Here will go the changes added to the tweaker. 
+## Here will go the changes added to the tweaker.
+# v0.7 "Rammed"
+> Rest in piss mem_limit
+
+### New features
+- ***Added ZSWAP I/O, ZSWAP Pool % tweaking, ZSWAP algorithms tweaking, ZRAM disk size tweaking, ZRAM algorithms tweaking, ZRAM streams tweaking, and NUMA Balancing toggling***
+- ***Added "stop-and-go" tweaks to the ZRAM commands*** so when you run it you dont have to mannually turn it off.
+- ***General tweaks and fixes to the code.***
+
 # v0.6 "Wifi-ed"
 > This update came surprisingly before I expected.
 
