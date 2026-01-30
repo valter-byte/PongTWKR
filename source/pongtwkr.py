@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# PongTWKR v0.5 - A simple system tweaker for Linux systems.
+# PongTWKR v0.6 - A simple system tweaker for Linux systems.
 # Author: valter-byte (and copilot ty ty for saving me from my crashouts at 3am)
 # License: GLP-3.0
 # uhm yeah ik its messy but idc
@@ -18,6 +18,10 @@ import os
 import datetime
 import subprocess
 import json
+c1 = "\033[38;5;242m" # Gris rancio
+c2 = "\033[38;5;248m" # Gris medio
+c3 = "\033[38;5;255m" # Blanco Mente Fría
+rs = "\033[0m"        # Reset (Sybau!)
 # -- Persistence Module --
 def enable_persistence():
     save_profile("persistent_settings")
@@ -54,7 +58,24 @@ def clean_thp_value(raw):
     if "[" in raw and "]" in raw:
         return raw.split("[")[1].split("]")[0].strip()
     return raw.strip()
+# ah, herese the wifi reading for ts profile
+def get_wifi_status_raw():
+    interfaces = get_wifi_interfaces()
+    if not interfaces: return "N/A"
+    try:
+        res = subprocess.check_output(["iw", "dev", interfaces[0], "get", "power_save"]).decode()
+        return "on" if "on" in res.lower() else "off"
+    except: return "N/A"
 
+def get_offload_status_raw(feature):
+    interfaces = get_physical_interfaces()
+    if not interfaces: return "N/A"
+    try:
+        res = subprocess.check_output(["ethtool", "-k", interfaces[0]]).decode()
+        for line in res.splitlines():
+            if feature in line.lower():
+                return "on" if "on" in line.lower() and "off" not in line.lower().split(":")[-1] else "off"
+    except: return "N/A"
 # -- Profile saving/loading --
 def save_profile(name):
     def read_file(path):
@@ -76,8 +97,15 @@ def save_profile(name):
         "turbo_status_amd": read_file("/sys/devices/system/cpu/cpufreq/boost"),
         "smt": read_file("/sys/devices/system/cpu/smt/control"),
         "hugepages": read_file("/proc/sys/vm/nr_hugepages"),
-        "thp": clean_thp_value(read_file("/sys/kernel/mm/transparent_hugepage/enabled"))
-
+        "thp": clean_thp_value(read_file("/sys/kernel/mm/transparent_hugepage/enabled")),
+        "rmem_max": read_file("/proc/sys/net/core/rmem_max"),
+        "wmem_max": read_file("/proc/sys/net/core/wmem_max"),
+        "tcp_metrics": read_file("/proc/sys/net/ipv4/tcp_no_metrics_save"),
+        "mtu_probing": read_file("/proc/sys/net/ipv4/tcp_mtu_probing"),
+        "wifi_powersave": get_wifi_status_raw(),
+        "offload_gro": get_offload_status_raw("generic-receive-offload"),
+        "offload_tso": get_offload_status_raw("tcp-segmentation-offload"),
+        "offload_gso": get_offload_status_raw("generic-segmentation-offload")
     }
 
     path = os.path.join(log_dir, f"{name}.json")
@@ -107,6 +135,18 @@ def load_profile(name):
     if "hugepages" in profile: set_hugepages(profile["hugepages"])
     if "thp" in profile:
         set_thp(clean_thp_value(profile["thp"]))
+    if "rmem_max" in profile: set_rmem(profile["rmem_max"])
+    if "wmem_max" in profile: set_wmem(profile["wmem_max"])
+    if "tcp_metrics" in profile: 
+        set_tcp_metrics("true" if profile["tcp_metrics"] == "1" else "false")
+    if "mtu_probing" in profile:
+        mtu_map = {"0": "off", "1": "on", "2": "always"}
+        set_mtu_probing(mtu_map.get(profile["mtu_probing"], "off"))
+    if "wifi_powersave" in profile:
+        set_wifi_power("true" if profile["wifi_powersave"] == "on" else "false")
+    if "offload_gro" in profile: set_offload("gro", "true" if profile["offload_gro"] == "on" else "false")
+    if "offload_tso" in profile: set_offload("tso", "true" if profile["offload_tso"] == "on" else "false")
+    if "offload_gso" in profile: set_offload("gso", "true" if profile["offload_gso"] == "on" else "false")
 
     print(f"✅ Profile '{name}' applied")
     log_change(f"Profile {name} applied")
@@ -141,7 +181,7 @@ def show_param_info(param):
     if param in ("dirtyratio", "dirtybackground", "cachepressure"):
         print("⚠️ Security: values out of range may cause instablity and kernel errors.")
     if param in ("cpumin", "cpumax"):
-        print("⚠️ Beware: The CPU automatically tops itself. No matter if you do override, the values will be topped to the physical limits of your CPY")
+        print("⚠️ Beware: The CPU automatically tops itself. No matter if you do override, the values will be topped to the physical limits of your CPU")
     if param == "governor":
         print("⚠️ Beware: Some governors may not be available for all systems.")
     if param == "thp":
@@ -179,7 +219,7 @@ infos = {
     "dirtyratio": "Dirty Ratio defines the maximum percentage of dirty memory before writing onto the disk. Safe range: 20-70%",
     "dirtybackground": "Same as dirty ratio, but writing onto the background instead of the disk. IT SHOULD ALWAYS BE LOWER THAN DIRTY RATIO. Safe range: 5-50",
     "cachepressure": "Controls the pressure over the cache (duh), safe values: 0-100",
-    "governor": "Governors are presets that the CPU comes with. If you want performance, use sudo pongtwkr governor performance, if you want power saving, uso powersave.",
+    "governor": "Governors are presets that the CPU comes with. If you want performance, use sudo pongtwkr governor performance, if you want power saving, use powersave.",
     "cpumin": "Defines the minimum frequency for the CPU",
     "cpumax": "Defines the maximum frequency for the CPU.",
     "info": "Shows a quick set of info and tweaks made.",
@@ -190,9 +230,183 @@ improving performance for applications that use large amounts of memory.""",
 which can improve performance for certain applications by reducing overhead and increasing TLB efficiency.""",
     "cputurbo": """Enables or disables CPU Turbo Boost (Intel) or Precision Boost (AMD),
 which allows the CPU to run at higher frequencies under certain conditions for improved performance.""",
-    "smt": "Simultaneous Multi-Threading (SMT) allows multiple threads to run on each CPU core, improving parallelism and performance in multi-threaded applications."
+    "smt": "Simultaneous Multi-Threading (SMT) allows multiple threads to run on each CPU core, improving parallelism and performance in multi-threaded applications.",
+    "offload": "Network offloading features (like GRO, LRO, TSO, GSO) help reduce CPU load by offloading certain network processing tasks to the network interface card (NIC).",
+    "tcpmetrics": "TCP metrics saving allows the kernel to save and reuse TCP connection metrics, improving performance for frequently used connections.",
+    "wifipower": "Wifi power management allows the system to save power by reducing the power consumption of wifi interfaces when not in use.",
+    "mtuprobing": "MTU probing helps optimize network performance by dynamically adjusting the Maximum Transmission Unit (MTU) size based on network conditions.",
+    "rmem": "Sets the maximum receive buffer size for network sockets, which can improve network performance for high-throughput applications.",
+    "wmem": "Sets the maximum send buffer size for network sockets, which can improve network performance for high-throughput applications."
 }
-# -- THP or sum --
+# wifi detection, made this so future updates are easier
+def get_wifi_interfaces():
+    interfaces = []
+    for iface in glob.glob("/sys/class/net/*"):
+        if os.path.isdir(os.path.join(iface, "wireless")):
+            interfaces.append(os.path.basename(iface))
+    return interfaces
+def get_physical_interfaces():
+    interfaces = []
+    for iface in glob.glob("/sys/class/net/*"):
+        name = os.path.basename(iface)
+        if name == "lo":
+            continue                    # <-- skips loopback and virtual thingies...
+        if name.startswith(("docker", "virbr", "br-", "veth")):
+            continue
+        interfaces.append(name)
+    return interfaces
+
+
+# -- wifi power management --
+def set_wifi_power(state):
+    if state.lower() not in ("true", "false"):
+        print("⚠️ Error: wifi_power only accepts 'true' or 'false'.")
+        return
+
+    val = "on" if state.lower() == "false" else "off"
+    wifi_ifaces = get_wifi_interfaces()
+
+    if not wifi_ifaces:
+        print("⚠️ What the hell..? No wifi interfaces found.")
+        return
+
+    for iface in wifi_ifaces:
+        try:
+            subprocess.run(["iw", "dev", iface, "set", "power_save", val], check=True)
+            print(f"✅ Wifi power for {iface} set to {val}")
+            log_change(f"Wifi power {iface} set to {val}")
+        except Exception as e:
+            print(f"⚠️ Error applying wifi power in {iface}: {e}")
+# -- tcp metrics --
+def set_tcp_metrics(state):
+    path = "/proc/sys/net/ipv4/tcp_no_metrics_save"
+
+    if not os.path.exists(path):
+        print("⚠️ TCP metrics is not avaiable for IPv6-only or container systems.")
+        return
+
+    if state.lower() == "false":
+        val = "1"
+    elif state.lower() == "true":
+        val = "0"
+    else:
+        print("⚠️ Error: tcpmetrics only accepts 'true' or 'false'.")
+        return
+
+    try:
+        with open(path, "w") as f:
+            f.write(val)
+        print(f"✅ TCP metrics save set to {val} ({'disabled' if val=='1' else 'enabled'})")
+        log_change(f"TCP metrics save set to {val}")
+    except PermissionError:
+        print("⚠️ Error: please use SUDO.")
+    except Exception as e:
+        print(f"⚠️ Error when applying TCP metrics: {e}")
+# mtu probing
+def set_mtu_probing(mode):
+    path = "/proc/sys/net/ipv4/tcp_mtu_probing"
+
+    allowed = {
+        "off": "0",
+        "fail": "1",
+        "always": "2"
+    }
+
+    if mode.lower() not in allowed:
+        print("⚠️ Error: mtu_probing only accepts 'off', 'fail' or 'always'.")
+        return
+
+    if not os.path.exists(path):
+        print("⚠️ MTU probing is not available on IPv6-only or container systems.")
+        return
+
+    try:
+        with open(path, "w") as f:
+            f.write(allowed[mode.lower()])
+        print(f"✅ MTU probing set to {mode.lower()} ({allowed[mode.lower()]})")
+        log_change(f"MTU probing set to {mode.lower()}")
+    except PermissionError:
+        print("⚠️ Error: please use SUDO to modify MTU probing.")
+    except Exception as e:
+        print(f"⚠️ Error when applying MTU probing: {e}")
+# the GREATEST rmem and wmem tweak you have ever seen:
+def parse_size(value):
+    try:
+        val = str(value).lower()
+        if val.endswith("k"):
+            return int(val[:-1]) * 1024
+        elif val.endswith("m"):
+            return int(val[:-1]) * 1024 * 1024
+        else:
+            return int(val)
+    except ValueError:
+        print("⚠️ Error: Buffer size must be an integer or end with 'K' or 'M' for kilobytes/megabytes. (Ex. 256K, 4M, 1048576)")
+        return None
+def set_rmem(value):
+    path = "/proc/sys/net/core/rmem_max"
+    size = parse_size(value)
+    if size is None:
+        return
+    try:
+        with open(path, "w") as f:
+            f.write(str(size))
+        print(f"✅ rmem_max set to {size} bytes")
+        log_change(f"rmem_max set to {size}")
+    except PermissionError:
+        print("⚠️ Error: please run with SUDO")
+    except Exception as e:
+        print(f"⚠️ Error when applying rmem_max: {e}")
+
+def set_wmem(value):
+    path = "/proc/sys/net/core/wmem_max"
+    size = parse_size(value)
+    if size is None:
+        return
+    try:
+        with open(path, "w") as f:
+            f.write(str(size))
+        print(f"✅ wmem_max set to {size} bytes")
+        log_change(f"wmem_max set to {size}")
+    except PermissionError:
+        print("⚠️ Error: please run with SUDO")
+    except Exception as e:
+        print(f"⚠️ Error when applying wmem_max: {e}")
+
+# -- offloading toggles --
+
+def set_offload(feature, state):
+    allowed_features = ["gro", "lro", "tso", "gso"]
+    if feature.lower() not in allowed_features:
+        print(f"⚠️ Error: offload only accepts {allowed_features}.")
+        return
+
+    val = "on" if state.lower() == "true" else "off" if state.lower() == "false" else None
+    if val is None:
+        print("⚠️ Error: offload only accepts 'true' or 'false'.")
+        return
+
+    interfaces = get_physical_interfaces()
+    if not interfaces:
+        print("⚠️ No physical network interfaces found...")
+        return
+
+    for iface in interfaces:
+        try:
+            subprocess.run(["ethtool", "-K", iface, feature.lower(), val], check=True)
+            print(f"✅ Offload {feature} en {iface} set to {val}")
+            log_change(f"Offload {feature} en {iface} set to {val}")
+        except FileNotFoundError:
+            print("⚠️ Error: 'ethtool' not found. Please install it to manage offloading features.")
+            return
+        except subprocess.CalledProcessError:
+            print(f"⚠️ {iface} does not support {feature}.")
+        except PermissionError:
+            print(f"⚠️ Error: please run with SUDO.")
+        except Exception as e:
+            print(f"⚠️ Unexpected error when applying  {feature} in {iface}: {e}")
+
+
+    # -- THP or sum --
 def set_thp(mode):
     path = "/sys/kernel/mm/transparent_hugepage/enabled"
     mode = mode.lower()
@@ -439,7 +653,10 @@ def save_defaults():
         "cputurbo_amd": "/sys/devices/system/cpu/cpufreq/boost",
         "smt": "/sys/devices/system/cpu/smt/control",
         "hugepages": "/proc/sys/vm/nr_hugepages",
-        "thp": "/sys/kernel/mm/transparent_hugepage/enabled"
+        "thp": "/sys/kernel/mm/transparent_hugepage/enabled",
+        "tcpmetrics": "/proc/sys/net/ipv4/tcp_no_metrics_save", "mtuprobing": "/proc/sys/net/ipv4/tcp_mtu_probing", 
+        "rmem_max": "/proc/sys/net/core/rmem_max",
+        "wmem_max": "/proc/sys/net/core/wmem_max"
     }
 
     original_data = {}
@@ -457,8 +674,6 @@ def save_defaults():
         except Exception as e:
             print(f"⚠️ Could not backup {param}: {e}")
             original_data[param] = None
-
-    # Guardamos el búnker en un JSON
     try:
         with open(defaults_path, "w") as f:
             json.dump(original_data, f, indent=4)
@@ -480,7 +695,11 @@ def reset_defaults():
         "cachepressure": set_cache_pressure,
         "smt": set_smt,
         "hugepages": set_hugepages,
-        "thp": set_thp
+        "thp": set_thp,
+        "tcpmetrics": set_tcp_metrics,
+        "mtuprobing": set_mtu_probing, 
+        "rmem_max": set_rmem, 
+        "wmem_max": set_wmem
     }
 
     print("🔄 [RESET] Restoring system to default settings...")
@@ -504,9 +723,13 @@ def safe_profile():
     set_dirty_background_ratio(10)
     set_cache_pressure(50)
     set_cputurbo("true")
-    set_smt("on")
+    set_smt("true")
     set_hugepages(0)
     set_thp("madvise")
+    set_tcp_metrics("false")
+    set_mtu_probing("off")
+    set_rmem("212992")
+    set_wmem("212992")
     print("✅ Safe profile applied")
     log_change("Safe profile applied")
 
@@ -538,7 +761,7 @@ def show_info_war():
     ✝️ Estimated casualties: +700 million
     ⏳ Time for impact: T-15 seconds for launch."
     🖥️ Executing command: sudo rm -rf / --no-preserve-root)
-    Thank you, AGENT FINN MC MISSILE. Proceding with launch...""")
+    Thank you, AGENT FINN MC MISSILE. Proceeding with launch...""")
 
 # getting fan speeds, this is 100% not working
 def get_all_fan_speeds(): 
@@ -596,7 +819,14 @@ def show_info():
     fan_speed = get_all_fan_speeds()
     uptime_raw = read_file("/proc/uptime")
     process_count = str(len(psutil.pids()))
-
+    tcp_metrics = read_file("/proc/sys/net/ipv4/tcp_no_metrics_save")
+    mtu_probing = read_file("/proc/sys/net/ipv4/tcp_mtu_probing")
+    rmem_max = read_file("/proc/sys/net/core/rmem_max")
+    wmem_max = read_file("/proc/sys/net/core/wmem_max")
+    try:
+        wifi_power = subprocess.check_output(["iw", "dev", "wlan0", "get", "power_save"]).decode().strip()
+    except:
+        wifi_power = "N/A"
     def khz_to_ghz(val):
         try:
             return f"{int(val) / 1_000_000:.2f} GHz"
@@ -621,32 +851,80 @@ def show_info():
         if cpu_min.isdigit() and int(cpu_min) > 6_000_000:
             print("⚠️ CPU min freq unusually high (Check...).")
     except:
-        pass
+        pass    
     try:
         if cpu_max.isdigit() and int(cpu_max) > 6_000_000:
             print("⚠️ CPU max freq unusually high (Check...).")
     except:
         pass
+    try:
+        if rmem_max.isdigit():
+            rmem_val = int(rmem_max)
+            if rmem_val < 65536 or rmem_val > 16777216:
+                print("⚠️ rmem_max out of safe range. It may cause instability.")
+        if wmem_max.isdigit():
+            wmem_val = int(wmem_max)
+            if wmem_val < 65536 or wmem_val > 16777216:
+                print("⚠️ wmem_max out of safe range. It may cause instability.")
+    except:
+        pass
+        # --- Network info additions ---
+    mtu_map = {"0": "Off", "1": "Fail only", "2": "Always"}
+    mtu_text = mtu_map.get(mtu_probing, mtu_probing)
+
+    tcp_text = "Disabled" if tcp_metrics == "1" else "Enabled" if tcp_metrics == "0" else tcp_metrics
+
+#MB and KB yk formatter
+    def format_bytes(val):
+        try:
+            val = int(val)
+            if val >= 1024*1024:
+                return f"{val // (1024*1024)} MB"
+            elif val >= 1024:
+                    return f"{val // 1024} KB"
+            else:
+                return f"{val} B"
+        except:
+            return val
+
+
 
     # --- ASCII Pong + Logo ---
-    ascii_art = """
-+------------------------------------------------------------+
-|                                                            |
-|                          o                                 |
-|                                                            |
-|   |                                                        |
-|                                                            |
-|                                                        |   |
-+------------------------------------------------------------+
-
-██████╗░░█████╗░███╗░░██╗░██████╗░████████╗░██╗░░░░░░░██╗██╗░░██╗██████╗░
-██╔══██╗██╔══██╗████╗░██║██╔════╝░╚══██╔══╝░██║░░██╗░░██║██║░██╔╝██╔══██╗
-██████╔╝██║░░██║██╔██╗██║██║░░██╗░░░░██║░░░░╚██╗████╗██╔╝█████═╝░██████╔╝
-██╔═══╝░██║░░██║██║╚████║██║░░╚██╗░░░██║░░░░░████╔═████║░██╔═██╗░██╔══██╗
-██║░░░░░╚█████╔╝██║░╚███║╚██████╔╝░░░██║░░░░░╚██╔╝░╚██╔╝░██║░╚██╗██║░░██║
-╚═╝░░░░░░╚════╝░╚═╝░░╚══╝░╚═════╝░░░░╚═╝░░░░░░╚═╝░░░╚═╝░░╚═╝░░╚═╝╚═╝░░╚═╝
+    ascii_art = r"""
+╔══════════════════════════════════════════════════════════════════════════════╗
+║╔════════════════════════════════════════════════════════════════════════════╗║
+║║                         ██████╗     |   ██╗  ██╗                           ║║
+║║                         ╚════██╗    |   ██║  ██║                           ║║
+║║  █                      █████╔╝     |   ███████║                           ║║
+║║  █                      ╚═══██╗     |   ╚════██║                           ║║
+║║  █                     ██████╔╝     |        ██║                           ║║
+║║  █                     ╚═════╝      |        ╚═╝                           ║║
+║║  █                                  |                                      ║║
+║║                           ╔╗        |                                      ║║
+║║                           ╚╝        |                                      ║║
+║║                                     |                                      ║║
+║║                                     |                                      ║║
+║║                                     |                                      ║║
+║║                                     |                                      ║║
+║║                                     |                                 █    ║║
+║║                                     |                                 █    ║║
+║║                                     |                                 █    ║║
+║║                                     |                                 █    ║║
+║║                                     |                                 █    ║║
+║║                                     |                                      ║║
+║║                                     |                                      ║║
+║╚════════════════════════════════════════════════════════════════════════════╝║
+╚══════════════════════════════════════════════════════════════════════════════╝
+{c1}$$$$$$$\   $$$$$$\  $$\   $$\  $$$$$$\ $$$$$$$$\ $$\      $$\ $$\   $$\ $$$$$$$\  
+{c1}$$  __$$\ $$  __$$\ $$$\  $$ |$$  __$$\\__$$  __|$$ | $\  $$ |$$ | $$  |$$  __$$\ 
+{c2}$$ |  $$ |$$ /  $$ |$$$$\ $$ |$$ /  \__|  $$ |   $$ |$$$\ $$ |$$ |$$  / $$ |  $$ |
+{c2}$$$$$$$  |$$ |  $$ |$$ $$\$$ |$$ |$$$$\   $$ |   $$ $$ $$\$$ |$$$$$  /  $$$$$$$  |
+{c3}$$  ____/ $$ |  $$ |$$ \$$$$ |$$ |\_$$ |  $$ |   $$$$  _$$$$ |$$  $$<   $$  __$$< 
+{c3}$$ |      $$ |  $$ |$$ |\$$$ |$$ |  $$ |  $$ |   $$$  / \$$$ |$$ |\$$\  $$ |  $$ |
+{c3}$$ |       $$$$$$  |$$ | \$$ |\$$$$$$  |  $$ |   $$  /   \$$ |$$ | \$$\ $$ |  $$ |
+{c3}\__|       \______/ \__|  \__| \______/   \__|   \__/     \__|\__|  \__|\__|  \__|{rs}
 """
-
+    ascii_art = ascii_art.format(c1="\033[95m", c2="\033[94m", c3="\033[92m", rs="\033[0m")
     info_lines = [
         f"💾 RAM: {mem.available // (1024**2)} MB libres / {mem.total // (1024**2)} MB totales",
         f"⚙️ CPU usage per core: {cpu_usage}",
@@ -667,8 +945,12 @@ def show_info():
         f"⚡ CPU max freq: {cpu_max_ghz}",
         f"💾 Swap: {swap.used // (1024**2)} MB used / {swap.total // (1024**2)} MB total",
         f"📂 Buffers: {mem.buffers // (1024**2)} MB | Cached: {mem.cached // (1024**2)} MB",
+        f"📊 TCP Metrics Save: {tcp_text}",
+        f"📡 MTU Probing: {mtu_text}", 
+        f"📦 rmem_max: {format_bytes(rmem_max)}", 
+        f"📦 wmem_max: {format_bytes(wmem_max)}", 
+        f"⚙ Wifi Power: {wifi_power}", 
     ]
-
     # merge ascii and fetch
     ascii_lines = ascii_art.splitlines()
     max_len = max(len(line) for line in ascii_lines)
@@ -725,7 +1007,7 @@ if __name__ == "__main__":
         if override:
             set_dirty_ratio(sys.argv[2])
         else:
-            val = limit_value("Dirty Ratio", sys.argv[2], 0, 40)
+            val = limit_value("Dirty Ratio", sys.argv[2], 0, 70)
             if val is not None:
                 set_dirty_ratio(val)
 
@@ -795,9 +1077,39 @@ if __name__ == "__main__":
                 load_profile(sys.argv[2])
         else: 
             load_profile(sys.argv[2])
+    elif option == "rmem":
+        if override:
+            set_rmem(sys.argv[2])
+        else:
+            val = parse_size(sys.argv[2])
+            if val is not None:
+                val = limit_value("rmem_max", val, 65536, 16777216)
+                if val is not None:
+                    set_rmem(val)
+
+    elif option == "wmem":
+        if override:
+            set_wmem(sys.argv[2])
+        else:
+            val = parse_size(sys.argv[2])
+            if val is not None:
+                val = limit_value("wmem_max", val, 65536, 16777216)
+                if val is not None:
+                    set_wmem(val)
+    elif option == "offload":
+        if len(sys.argv) < 4:
+            print("⚠️ Use: pongtwkr offload <feature> <true/false>. Features are: gro, gso, tso, ufo, sg, rx, tx.")
+        else:
+            set_offload(sys.argv[2], sys.argv[3])
 
     elif option == "reset":
         reset_defaults()
+    elif option == "wifipower":
+        set_wifi_power(sys.argv[2])
+    elif option == "tcpmetrics":
+        set_tcp_metrics(sys.argv[2])
+    elif option == "mtuprobing":
+        set_mtu_probing(sys.argv[2])
 
     elif option == "safe":
         safe_profile()
@@ -808,3 +1120,4 @@ if __name__ == "__main__":
         enable_persistence()
     else:
         print("⚠️ Unknown option or bad usage. Please refer to the documentation for further help.")
+
