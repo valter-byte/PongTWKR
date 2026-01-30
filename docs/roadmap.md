@@ -1,10 +1,8 @@
 # Roadmap for first semester of 2026:
 ## ROADMAP! TO 1.0 WE GO!
-- v0.6 — “Wifi-ed” 📌 **Here we are.**
-- ## v0.7 — “Rammed”
-  - Advanced tweaks for RAM (zram, zswap, etc.)
-- ## v0.8 — “Graphed”
-  - GPU Tweaks & Probably drivers.
+- v0.7 — “Rammed” 📌 **Here we are.**
+- ## v0.8 — “Graphed” 
+  - GPU Tweaks & Probably drivers. <-- holy crap im scared af
   - GPU Metrics & Info
 - ## v0.9 — “Kernel-ed”
   - Deeper tweaks in general.
