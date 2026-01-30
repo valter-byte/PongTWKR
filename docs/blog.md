@@ -1,3 +1,31 @@
+# ENTRY 6 | January 30, 2026, 03:27 A.M.
+
+Hey there. Feeling a bit better after chilling out some time. Now I'm taking the time to properly update the documentation:
+
+v0.7 was a smooth ride. Well, almost. All because of f*cking, mem_limit.
+
+You see, since v0.5 I've been following this workflow;
+
+Adding of the key features -->
+Adding info parameter of the new features -->
+Adding the new features to safe command -->
+Adding new features to the profile supporting -->
+Adding new features to the reset command -->
+Bugfixing and tweaking
+
+Now, when all of this updates key features were added, I move onto adding them to the profiles. When I tried them: the loading line for `mem_limit` worked when saving and loading, but, for some reason, it just didn't update the values. After some research, I determined it was a perms thing, because mem_limit file was write only, not read ig. So then I made a force read function thinking that it would work, but it didn't. I was tired and frustrated, so:
+
+`tired dev + annoying feature = Annoying feature was deleted succesfully.`
+
+I think the command itself worked properly, and writed the mem limit, but I rather delete a feature more than having it incomplete.
+
+So, if I'm having problems with shity mem limit, I don't want to imagine how will v0.8 will go with Nvidia drivers... fuck it.
+
+I'll continue uploading the docs and then the source code. See ya.
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
 # ENTRY 5 | January 30, 2026, 00:55 A.M.
 So... well. I don't feel very well today, but anyways, worked on v0.7, and completed it. Had a hard time, but not because of the update itself, more because I wasn't feeling well anyways. I'm afraid I'm not updating changelog, commands, roadmap, sourcecode and readme until tomorrow... but this is just for you guys to know that the v0.7 is complete.
 
