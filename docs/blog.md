@@ -1,3 +1,11 @@
+# ENTRY 5 | January 30, 2026, 00:55 A.M.
+So... well. I don't feel very well today, but anyways, worked on v0.7, and completed it. Had a hard time, but not because of the update itself, more because I wasn't feeling well anyways. I'm afraid I'm not updating changelog, commands, roadmap, sourcecode and readme until tomorrow... but this is just for you guys to know that the v0.7 is complete.
+
+I don't have anything else to say... more than thank you for reading this.
+
+See ya.
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
 # ENTRY 4 | January 29, 2026, 3:42 A.M
 Uhum. Yeah... I didn't sleep. I was about to turn off the computer when I saw the roadmap and thought... "well, it can't be too hard to rush this, right?" I was right, apparentely. 3 hours passed and I've completed v0.6 adding even more tweaks than I was originally going to do: I only was planning to add TCP Metrics, WiFi Powersave and MTU Probing, and I ended up adding Buffer (RMEM and WMEM) and Offloading tweaks. Cool, right?
 
