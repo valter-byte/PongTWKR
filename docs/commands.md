@@ -41,6 +41,22 @@
 ***Enables / Disables the TCP Metrics.***
 - `sudo pongtwkr mtuprobing <true/false>`
 ***Enables / Disables the MTU Probing.***
+- `sudo pongtwkr numa <true/false>`
+***Enables / Disables NUMA Balancing.***
+- `sudo pongtwkr zswap <true/false>`
+***Enables / Disables ZSWAP***
+- `sudo pongtwkr zswapalgo <algorithm>`
+***Applies the entered ZSWAP algorithm.***
+- `sudo pongtwkr zswappool <0-100 value>`
+***Sets the max ZSWAP Pool max % value.***
+- `sudo pongtwkr zramalgo <algorithm>`
+***Applies the entered ZRAM algorithm.***
+- `sudo pongtwkr zramsize <size>`
+> As other size tweaks, zramsize accepts 4G, 4000M and Bytes inputs.
+***Sets the ZRAM Size to the entered size***
+- `sudo pongtwkr zramstreams <streams>`
+> Automatically capped to your CPU Thread count.
+***Sets the ZRAM streams  to the designated value.***
 ## Misc.
 - `sudo pongtwkr info`
 **Shows a quick-info panel with a cool ASCII. Totally-self-produced idea... *cough* fastfetch but with other info... *cough* yeah..-**
