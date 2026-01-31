@@ -1,3 +1,14 @@
+# ENTRY 8 | January 31, 2026, 5:05 A.M.
+
+Hey there! Super-excited to announce we officially lifted-off. No more single .py. Now we are a proper app. v0.8-PRE Will be the first proper release here on github. No more "move .py to PATH". Now, just click and enjoy. PongTWKR is now ULTRA modular. If you want to create your own module:
+
+Create your .py defining all of its commands / functions as functions -->
+Add your module to __init__.py and pongtwkr.py main() 
+
+As easy as that. Now, everything is better. Tomorrow, I'll start working hard head-on on the tweaks. I'll probably start with Nvidia or AMD. Note that there will be a new branch: ***/gpu***. As I have no testers and no GPU, all tweaks I made I rely on just reading and understanding the code, so I can't assure 100% functionality and safety day zero without testers nor GPUs. Don't get me wrong: I won't upload trash code. I just don't want to upload things I can't assure you guys work fine and safe to the main branch. I hope you guys understand.
+
+See ya.
+
 # Important news. ENTRY 7 | January 30, 2026, 4:36 A.M.
 
 Couldn't sleep. I've been biting my tongue while thinking about v0.8. I might be crazy, but if I do this, PongTWKR will officially stop being a tweaking script and become a BIGGER tool. First, my thought about v0.8, from less-important to blow-minding.
