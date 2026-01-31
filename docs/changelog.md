@@ -1,5 +1,12 @@
 # CHANGELOG 
 ## Here will go the changes added to the tweaker.
+# v0.8-PRE 
+> No more "script tweaker"
+
+### No new features.
+- I re-structured the entire code. Now it is built like a proper app. Modular, and easier to contribute to. Going to be my first release. Those were the only changes: the bases for v0.8. Tomorrow I'll start and try do the graphs tweaks.
+
+
 # v0.7 "Rammed"
 > Rest in piss mem_limit
 
