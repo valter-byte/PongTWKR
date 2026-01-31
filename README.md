@@ -1,21 +1,116 @@
 # PongTWKR
-The objective of PongTWKR is to be an easy-to-use, handy tool for tweaking CPU, RAM, and other PC components like Swappiness, governor, etc. easily, without having to confront the terminal or shady directories. Please note that this program is targeted for those that can't/don't want to mess with commands or files on their Linux Distro, but want to get overall better performance.
 
-# How to use?
-Well, as for January 29, 2026, PongTWKR is still on early development. v0.7. It is a simple CLI program that makes it easier to make changes/tweaks to CPU/RAM configurations, such as governor, dirty_ratio, etc. Just install (Move pongtwkr.py to /usr/local/bin, /usr/bin or any other PATH directorie) and use it by the terminal!
+PongTWKR is an easy-to-use, modular toolkit for tweaking CPU, RAM, GPU, and other Linux system parameters (like swappiness, governors, dirty ratios, ZRAM, etc.) without having to dive into obscure directories or memorize dozens of commands.
 
-# Questions? Bugs? You broke your computer?
-Tell me, and please send me a screenshot of ***ANY*** error/bug.
+The project is designed for users who want better performance and control but prefer a safe, gamer‑friendly CLI instead of manual sysctl edits or scattered scripts.
+## ✨ Features (current v0.7)
 
-# Roadmap:
-I aim to finish the first stable release (1.0) before June 2026.
+  - CPU tweaks: governors, frequency locks, dirty ratios.
 
-# Our objective & philosophy
-PongTWKR aims to unify Linux performance tweaks that are usually scattered across different packages.  
-Our long-term goal is to be a *modular* and *open-source* toolkit, avoiding the need to install huge “gaming packs” with hundreds of tools you’ll never use.  
-Instead, just install PongTWKR and enjoy a growing set of 150+ tweaks (future roadmap), or keep it minimal and use only what you need.
+  - RAM tweaks: ZRAM algorithms, streams, limits, disksize.
 
+  - VM tweaks: swappiness, cache pressure.
 
-# About me
-Welp, I'm just a "dev" that enjoys Linux and, when I started with it, had problems when making tweaks like this. I'll love to see how far I can get with PongTWKR.
+  - Modular CLI commands with instant feedback and reset functions.
 
+  - Logging of every change for transparency.
+
+# 🚀 Roadmap
+
+ ###  v0.8 (Full release)
+       NVIDIA: 
+           - VRAM Overclocking
+           - Clock Lock
+           - Fan speed
+           - Power Limiter 
+           - Drivers (recommended)
+           - Reset button
+           - Info
+
+       AMDGPU & Radeon: 
+
+           - Smartshift
+           - Clock Lock
+           - Power Profile
+           - Power Cap
+           - Performance Level
+           - VRAM Overclocking
+           - OverDrive
+           - Drivers
+           - Info
+           - Reset Buttom
+
+       Intel ARC 
+      
+           - Frequency lock
+           - Info
+           - VRAM Overclocking
+           - Power Limits
+           - Reset button
+
+       Generic / Integrated GPUs 
+
+          - RC6 Reneder stnd-by
+          - FBC
+          - Video turbo
+          - Info
+          - Reset
+
+# 📖 Philosophy
+
+PongTWKR is built on five pillars:
+
+### Transparency → every tweak is logged, every error is shown.
+
+### Safety → instant rollback/reset, no hidden changes.
+
+### All-In-One → No more bloated "gaming packs" with hundreds of tools you'll never use. Install the base. Browse modules you like. Install. Enjoy
+
+### Freedom → Do whatever you want. Your PC. Your rules. Want to explode it? Explode it.
+
+### Fun and ease → We are a gaming focused program. You won't have to browse a 1023 page doc to change swappiness. `sudo pongtwkr swappiness` and done.
+
+# 🛠 Installation
+
+For now, clone the repo and move pongtwkr.py to your PATH (/usr/local/bin, /usr/bin, etc.).
+From v0.8 onwards, you can use the official installer:
+bash
+
+`curl -s https://raw.githubusercontent.com/valter-byte/PongTWKR/main/install.sh | sudo bash`
+
+Run it with:
+bash
+
+sudo pongtwkr
+
+📜 Commands
+
+The commands in PongTWKR CLI follow a basic scheme:
+
+`sudo pongtwkr <command> <value> <parameter>`
+
+No satanic rituals. No donating your soul to the Kernel:
+
+`sudo pongtwkr governor performance`
+`sudo pongtwkr info`
+`sudo pongtwkr offload gro false`
+`sudo pongtwkr dirtyratio 100 override`
+
+See? As easy as that.
+(See commands.md for full list.)
+
+# 🗂 Changelog
+
+    v0.7 “Rammed” → advanced RAM tweaks (zramalgo, zramstreams, zramlimit, zramsize).
+
+    v0.6 "WiFi-ed" → WiFi tweaks. TCP Metrics, MTU Probing, Offloading, etc..
+
+    v0.5 "Profiled" → Profiles. Hotfix.
+
+(See changelog.md for detailed history.)
+
+# 👤 About me
+
+I’m Valter, a Linux enthusiast who struggled with performance tweaks when starting out. PongTWKR is my attempt to make those tweaks accessible, safe, and fun.
+
+I document every step in blog.md — including setbacks, breakthroughs, and crazy ideas — because I believe in building openly and iteratively.
