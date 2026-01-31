@@ -1,6 +1,6 @@
 # Roadmap for first semester of 2026:
 ## ROADMAP! TO 1.0 WE GO!
-- v0.7 — “Rammed” 📌 **Here we are.**
+- v0.8-PRE 📌 **Here we are.**
 - ## v0.8 — “Graphed” 
   - GPU Tweaks & Probably drivers. <-- holy crap im scared af
   - GPU Metrics & Info
