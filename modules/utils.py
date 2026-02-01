@@ -280,7 +280,7 @@ def show_info():
 """
     ascii_art = ascii_art.format(c1="\033[95m", c2="\033[94m", c3="\033[92m", rs="\033[0m")
     info_lines = [
-        f"💾 RAM: {mem.available // (1024**2)} MB libres / {mem.total // (1024**2)} MB totales",
+        f"💾 RAM: {mem.available // (1024**2)} MB free / {mem.total // (1024**2)} MB total",
         f"⚙️ CPU usage per core: {cpu_usage}",
         f"🧵 Threads: {threads} | Physical Cores: {cores}",
         f"🔧 Swappiness: {swappiness}",
