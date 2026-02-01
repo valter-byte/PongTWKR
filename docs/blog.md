@@ -1,3 +1,12 @@
+# ENTRY 9 | February 1, 2026, 4:08 A.M.
+
+Hello! Been working all day on v0.8. 50%~ done with the AMD tweaks. 
+
+I haven't done anything else to add, so I'll probably just keep working tomorroy, yk?
+
+See ya.
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
 # ENTRY 8 | January 31, 2026, 5:05 A.M.
 
 Hey there! Super-excited to announce we officially lifted-off. No more single .py. Now we are a proper app. v0.8-PRE Will be the first proper release here on github. No more "move .py to PATH". Now, just click and enjoy. PongTWKR is now ULTRA modular. If you want to create your own module:
@@ -9,6 +18,7 @@ As easy as that. Now, everything is better. Tomorrow, I'll start working hard he
 
 See ya.
 
+------------------------------------------------------------------------------------------------------------------------------------------------------
 # Important news. ENTRY 7 | January 30, 2026, 4:36 A.M.
 
 Couldn't sleep. I've been biting my tongue while thinking about v0.8. I might be crazy, but if I do this, PongTWKR will officially stop being a tweaking script and become a BIGGER tool. First, my thought about v0.8, from less-important to blow-minding.
