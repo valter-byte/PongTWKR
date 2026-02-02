@@ -31,13 +31,13 @@ The project is designed for users who want better performance and control but pr
 
            - Smartshift
            - Clock Lock
-           - Power Profile
-           - Power Cap
-           - Performance Level
+           - Power Profile ✅
+           - Power Cap ✅
+           - Performance Level ✅
            - VRAM Overclocking
-           - OverDrive
+           - OverDrive 
            - Drivers
-           - Info
+           - Info ✅
            - Reset Buttom
 
        Intel ARC 
