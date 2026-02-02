@@ -1,3 +1,12 @@
+# ENTRY 10 | February 2, 2026, 2:03 A.M.
+
+Hey there guys! I'm super sorry for not doing commits today. The truth is **I didn't even had time to open VSC**.
+
+My OS was giving me headaches and crashes so... I went to change it. Tried EndeavourOS and, it broke when I logged in. Didn't want to fix it so went with Debian... and failed too. I just went with arch and... yeah, I was working until now tweaking everything for my PC. First time trying Hyprland btw. Anyways, I'll stop yapping and go back to work, GPU tweaks won't code theirselfs.
+
+See ya.
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
 # ENTRY 9 | February 1, 2026, 4:08 A.M.
 
 Hello! Been working all day on v0.8. 50%~ done with the AMD tweaks. 
