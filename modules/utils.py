@@ -9,6 +9,7 @@ import json
 import psutil
 import os
 import subprocess
+import platform
 
 
 def reset_defaults():
@@ -55,7 +56,22 @@ def reset_defaults():
                 set_cputurbo("true" if val == "0" else "false")
             elif param == "cputurbo_amd" and val is not None:
                 set_cputurbo("true" if val == "1" else "false")
-
+    if "disks" in original_data:
+        from modules import disks
+        print("💿 [RESET] Restoring disk schedulers and NCQ...")
+        for disk_name, settings in original_data["disks"].items():
+            
+            if "scheduler" in settings:
+                disks.set_io_scheduler(disk_name, settings["scheduler"])
+                
+            if "ncq_depth" in settings:
+                disks.set_ncq_depth(disk_name, settings["ncq_depth"])
+                
+            if "max_sectors" in settings:
+                disks.set_max_sectors(disk_name, settings["max_sectors"])
+            if "runtime_pm" in settings:
+                is_perf = True if settings["runtime_pm"] == "on" else False
+                disks.set_runtime_pm(disk_name, is_perf)
     print("✅ System successfully restored to the first-run state.")
 
 def safe_profile():
@@ -92,7 +108,6 @@ def safe_profile():
     print("✅ Safe profile applied")
     log_change("Safe profile applied")
 def read_file_force(path):
-    """Force read a file by temporarily changing permissions"""
     if not os.path.exists(path):
         return "0"
     try:
@@ -178,7 +193,15 @@ def show_info():
 
     cpu_min_ghz = khz_to_ghz(cpu_min)
     cpu_max_ghz = khz_to_ghz(cpu_max)
+    kernel = platform.release()
+    distro = "Linux"
+    if os.path.exists("/etc/os-release"):
+        with open("/etc/os-release") as f:
+            for line in f:
+                if line.startswith("PRETTY_NAME="):
+                    distro = line.split("=")[1].strip().replace('"', '')
 
+    desktop = os.environ.get("XDG_CURRENT_DESKTOP") or os.environ.get("DESKTOP_SESSION") or "TTY/Unknown"
     # fakefetch disclaimers
     if swappiness.isdigit() and int(swappiness) > 100:
         print("⚠️ Swappiness out of range. It may cause performance issues.")
@@ -309,7 +332,10 @@ def show_info():
         f"🌀 ZSWAP Enabled: {zswap_enabled}",
         f"🌀 ZSWAP Algo: {zswap_algo}",
         f"🌀 ZSWAP Pool: {zswap_pool}",
-        f"🌀 NUMA Balancing: {numa_balancing}"
+        f"🌀 NUMA Balancing: {numa_balancing}",
+        f"🖥️ Distro: {distro}",
+        f"🖥️ Kernel: {kernel}",
+        f"🖥️ Desktop Env: {desktop}",
     ]
     # merge ascii and fetch
     ascii_lines = ascii_art.splitlines()
@@ -320,7 +346,6 @@ def show_info():
         print(f"{left:<{max_len}}   {right}")
 
 def read_file(path):
-    """Simple file read with error handling"""
     try:
         with open(path) as f:
             return f.read().strip()
@@ -328,7 +353,6 @@ def read_file(path):
         return "N/A"
 
 def write_file(path, value):
-    """Write value to file with error handling"""
     try:
         with open(path, "w") as f:
             f.write(str(value))
@@ -338,7 +362,6 @@ def write_file(path, value):
         return False
 
 def clean_thp_value(raw):
-    """Clean THP value from kernel format [always] madvise never"""
     if "[" in raw and "]" in raw:
         return raw.split("[")[1].split("]")[0].strip()
     return raw.strip()
@@ -365,23 +388,24 @@ def limit_float(name, value, min_val, max_val):
         return max_val
     return val
 def parse_size(size_str):
-    """Parse size string like '16M', '4G', '1024' to bytes"""
     size_str = str(size_str).strip().upper()
-    if size_str.endswith('K'):
-        return int(size_str[:-1]) * 1024
-    elif size_str.endswith('M'):
-        return int(size_str[:-1]) * 1024 * 1024
-    elif size_str.endswith('G'):
-        return int(size_str[:-1]) * 1024 * 1024 * 1024
-    else:
+    try:
+        if size_str.endswith('K'):
+            return int(size_str[:-1]) * 1024
+        elif size_str.endswith('M'):
+            return int(size_str[:-1]) * 1024 * 1024
+        elif size_str.endswith('G'):
+            return int(size_str[:-1]) * 1024 * 1024 * 1024
         return int(size_str)
+    except (ValueError, TypeError):
+        return None
+       
 
-def parse_size_2(size_str):
-    """Alternative size parser for ZRAM"""
+def parse_size_2(size_str): #<-- lil bro is trying to copy big bro
     return parse_size(size_str)
 
 def find_real_user():
-    """Find the real user (not root) who invoked sudo"""
+
     user = os.environ.get('SUDO_USER') or os.environ.get('USER')
     if user and user != 'root':
         return user
@@ -395,24 +419,20 @@ def find_real_user():
     return 'root'
 
 def get_log_dir():
-    """Get the appropriate log directory for the current user"""
     real_user = find_real_user()
     return f"/home/{real_user}/pongtwkr/logs" if real_user != 'root' else "/root/pongtwkr/logs"
 log_dir = get_log_dir()
 def get_profile_dir():
-    """Get the appropriate profile directory for the current user"""
     real_user = find_real_user()
     return f"/home/{real_user}/pongtwkr/profiles" if real_user != 'root' else "/root/pongtwkr/profiles"
 
 def ensure_log_dir():
-    """Ensure log directory exists"""
     log_dir = get_log_dir()
     if not os.path.exists(log_dir):
         os.makedirs(log_dir, exist_ok=True)
     return log_dir
 
 def ensure_profile_dir():
-    """Ensure profile directory exists"""
     profile_dir = get_profile_dir()
     if not os.path.exists(profile_dir):
         os.makedirs(profile_dir, exist_ok=True)
@@ -423,7 +443,6 @@ def ensure_profile_dir():
 # ==========================================
 
 def get_wifi_interfaces():
-    """Get list of WiFi interfaces"""
     try:
         result = subprocess.check_output(["iw", "dev"]).decode()
         interfaces = []
@@ -435,7 +454,6 @@ def get_wifi_interfaces():
         return []
 
 def get_physical_interfaces():
-    """Get list of physical network interfaces"""
     try:
         result = subprocess.check_output(["ip", "link", "show"]).decode()
         interfaces = []
@@ -448,7 +466,6 @@ def get_physical_interfaces():
         return []
 
 def get_wifi_status_raw():
-    """Get WiFi power save status (for profiles)"""
     interfaces = get_wifi_interfaces()
     if not interfaces: 
         return "N/A"
@@ -459,7 +476,6 @@ def get_wifi_status_raw():
         return "N/A"
 
 def get_offload_status_raw(feature):
-    """Get network offload feature status (for profiles)"""
     interfaces = get_physical_interfaces()
     if not interfaces: 
         return "N/A"
@@ -476,17 +492,14 @@ def get_offload_status_raw(feature):
 # ==========================================
 
 def translate_bool_to_kernel(value):
-    """Convert true/false to kernel format (1/0)"""
     if str(value).lower() in ["true", "1", "on", "yes"]:
         return "1"
     return "0"
 
 def translate_kernel_to_bool(value):
-    """Convert kernel format (1/0) to boolean string"""
     return "true" if str(value) in ["1", "Y", "on"] else "false"
 
 def get_available_governors():
-    """Get list of available CPU governors"""
     try:
         with open("/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors") as f:
             return f.read().strip().split()
@@ -494,8 +507,12 @@ def get_available_governors():
         return ["performance", "powersave", "schedutil"]
 
 def get_cpu_count():
-    """Get number of CPU cores"""
     try:
         return len([x for x in os.listdir("/sys/devices/system/cpu") if x.startswith("cpu") and x[3:].isdigit()])
     except:
         return 1
+def get_all_physical_disks():
+    disks = []
+    for entry in glob.glob('/sys/block/sd*') + glob.glob('/sys/block/nvme*'):
+        disks.append(os.path.basename(entry))
+    return disks

@@ -11,8 +11,6 @@ from .profiles import save_profile
 from .logger import log_change
 
 def enable_persistence():
-    """Enable persistence by creating a systemd service"""
-    # Save current settings as persistent
     save_profile("persistent_settings")
     
     service_path = "/etc/systemd/system/pongtwkr.service"

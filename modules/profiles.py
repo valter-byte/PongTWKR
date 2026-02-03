@@ -1,19 +1,28 @@
 #!/usr/bin/env python3
-"""
-PongTWKR v0.8 - Profile Management Module
-Handles saving and loading system configuration profiles
-"""
 
 import os
 import json
+import glob
 from .utils import (
     ensure_profile_dir, read_file, clean_thp_value,
-    get_wifi_status_raw, get_offload_status_raw
+    get_wifi_status_raw, get_offload_status_raw, get_all_physical_disks
 )
 from .logger import log_change
 
 def save_profile(name):
-    """Save current system configuration to a profile"""
+    disk_list = glob.glob("/sys/block/sd*") + glob.glob("/sys/block/nvme*")
+    disks_data = {}
+
+    for disk_path in disk_list:
+        disk_name = os.path.basename(disk_path)
+        if "zram" in disk_name or (disk_name[-1].isdigit() and "nvme" not in disk_name):
+            continue 
+        disks_data[disk_name] = {
+            "scheduler": clean_thp_value(read_file(f"{disk_path}/queue/scheduler")),
+            "ncq_depth": read_file(f"{disk_path}/queue/nr_requests"),
+            "max_sectors": read_file(f"{disk_path}/queue/max_sectors_kb"),
+            "runtime_pm": read_file(f"{disk_path}/device/power/control")
+        }
     profile = {
         "swappiness": read_file("/proc/sys/vm/swappiness"),
         "dirty_ratio": read_file("/proc/sys/vm/dirty_ratio"),
@@ -41,7 +50,9 @@ def save_profile(name):
         "zswap_enabled": "true" if read_file("/sys/module/zswap/parameters/enabled") == "Y" else "false",
         "zswap_algo": read_file("/sys/module/zswap/parameters/compressor"),
         "zswap_pool": read_file("/sys/module/zswap/parameters/max_pool_percent"),
-        "numa_balancing": "true" if read_file("/proc/sys/kernel/numa_balancing") == "1" else "false"
+        "numa_balancing": "true" if read_file("/proc/sys/kernel/numa_balancing") == "1" else "false",
+        "disks": disks_data
+
     }
 
     profile_dir = ensure_profile_dir()
@@ -54,9 +65,7 @@ def save_profile(name):
     log_change(f"Profile {name} saved")
 
 def load_profile(name):
-    """Load and apply a saved profile"""
-    # Import here to avoid circular imports
-    from . import cpu, ram, net
+    from . import cpu, ram, net, disks
     
     profile_dir = ensure_profile_dir()
     path = os.path.join(profile_dir, f"{name}.json")
@@ -67,8 +76,6 @@ def load_profile(name):
     
     with open(path) as f:
         profile = json.load(f)
-
-    # Apply CPU settings
     print(f"🔄 Applying profile '{name}'... Hold tight. You may experience stuttering / freezing.")
     if "swappiness" in profile: 
         ram.set_swappiness(profile["swappiness"])
@@ -93,8 +100,6 @@ def load_profile(name):
         ram.set_hugepages(profile["hugepages"])
     if "thp" in profile:
         ram.set_thp(clean_thp_value(profile["thp"]))
-    
-    # Apply Network settings
     if "rmem_max" in profile: 
         net.set_rmem(profile["rmem_max"])
     if "wmem_max" in profile: 
@@ -112,8 +117,6 @@ def load_profile(name):
         net.set_offload("tso", "true" if profile["offload_tso"] == "on" else "false")
     if "offload_gso" in profile: 
         net.set_offload("gso", "true" if profile["offload_gso"] == "on" else "false")
-    
-    # Apply Compression settings
     if "zram_algo" in profile: 
         ram.set_zramalgo(profile["zram_algo"])
     if "zram_size" in profile: 
@@ -128,6 +131,19 @@ def load_profile(name):
         ram.set_zswap_pool(profile["zswap_pool"])
     if "numa_balancing" in profile: 
         ram.set_numa_balancing(profile["numa_balancing"])
+    if "disks" in profile:
+        for disk_name, settings in profile["disks"].items():
+            print(f"📦 Configuring storage device: {disk_name}...")
+            if "scheduler" in settings:
+                disks.set_io_scheduler(disk_name, settings["scheduler"])
+            if "ncq_depth" in settings:
+                disks.set_ncq_depth(disk_name, settings["ncq_depth"]) 
+            if "max_sectors" in settings:
+                disks.set_max_sectors(disk_name, settings["max_sectors"]) 
+            if "runtime_pm" in settings:
+                perf_mode = True if settings["runtime_pm"] == "on" else False
+                disks.set_runtime_pm(disk_name, perf_mode)
+    
 
     print(f"✅ Profile '{name}' applied")
     log_change(f"Profile {name} applied")

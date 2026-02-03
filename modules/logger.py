@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""
-PongTWKR v0.8 - Logging Module
-Handles change logging and default value storage
-"""
-
+import glob
 import os
 import datetime
 import json
@@ -18,14 +14,24 @@ def log_change(message):
         f.write(f"[{timestamp}] {message}\n")
 
 def save_original_defaults():
-    """Save original system defaults before any changes"""
     log_dir = ensure_log_dir()
     defaults_file = os.path.join(log_dir, "original_defaults.json")
-    
-    # Only save if doesn't exist (first run)
     if os.path.exists(defaults_file):
         return
-    
+    disk_list = glob.glob("/sys/block/sd*") + glob.glob("/sys/block/nvme*")
+    disks_defaults = {}
+
+    for disk_path in disk_list:
+        disk_name = os.path.basename(disk_path)
+        if "zram" in disk_name or (disk_name[-1].isdigit() and "nvme" not in disk_name):
+            continue
+            
+        disks_defaults[disk_name] = {
+            "scheduler": clean_thp_value(read_file(f"{disk_path}/queue/scheduler")),
+            "ncq_depth": read_file(f"{disk_path}/queue/nr_requests"),
+            "max_sectors": read_file(f"{disk_path}/queue/max_sectors_kb"),
+            "runtime_pm": read_file(f"{disk_path}/device/power/control")
+        }
     defaults = {
         "swappiness": read_file("/proc/sys/vm/swappiness"),
         "dirty_ratio": read_file("/proc/sys/vm/dirty_ratio"),
@@ -39,6 +45,7 @@ def save_original_defaults():
         "smt": read_file("/sys/devices/system/cpu/smt/control"),
         "hugepages": read_file("/proc/sys/vm/nr_hugepages"),
         "thp": clean_thp_value(read_file("/sys/kernel/mm/transparent_hugepage/enabled")),
+        "disks": disks_defaults,
     }
     
     with open(defaults_file, "w") as f:
