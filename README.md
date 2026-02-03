@@ -3,7 +3,7 @@
 PongTWKR is an easy-to-use, modular toolkit for tweaking CPU, RAM, GPU, and other Linux system parameters (like swappiness, governors, dirty ratios, ZRAM, etc.) without having to dive into obscure directories or memorize dozens of commands.
 
 The project is designed for users who want better performance and control but prefer a safe, gamer‑friendly CLI instead of manual sysctl edits or scattered scripts.
-## ✨ Features (current v0.7)
+## ✨ Features (current v0.8)
 
   - CPU tweaks: governors, frequency locks, dirty ratios.
 
@@ -11,9 +11,13 @@ The project is designed for users who want better performance and control but pr
 
   - VM tweaks: swappiness, cache pressure.
 
+  - Disk tweaks: I/O Scheduler, NCQ, Runtime Power Management
+  
   - Modular CLI commands with instant feedback and reset functions.
 
   - Logging of every change for transparency.
+
+*(Check `commands.md` for further info)*
 
 # 🚀 Roadmap
 # (GPU TWEAKS WERE DELAYED DUE TO LACK OF TESTERS.)
