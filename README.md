@@ -16,45 +16,13 @@ The project is designed for users who want better performance and control but pr
   - Logging of every change for transparency.
 
 # 🚀 Roadmap
+# (GPU TWEAKS WERE DELAYED DUE TO LACK OF TESTERS.)
 
- ###  v0.8 (Full release)
-       NVIDIA: 
-           - VRAM Overclocking
-           - Clock Lock
-           - Fan speed
-           - Power Limiter 
-           - Drivers (recommended)
-           - Reset button
-           - Info
-
-       AMDGPU & Radeon: 
-
-           - Smartshift
-           - Clock Lock
-           - Power Profile ✅
-           - Power Cap ✅
-           - Performance Level ✅
-           - VRAM Overclocking
-           - OverDrive 
-           - Drivers
-           - Info ✅
-           - Reset Buttom
-
-       Intel ARC 
-      
-           - Frequency lock
-           - Info
-           - VRAM Overclocking
-           - Power Limits
-           - Reset button
-
-       Generic / Integrated GPUs 
-
-          - RC6 Reneder stnd-by
-          - FBC
-          - Video turbo
-          - Info
-          - Reset
+## v0.8 "Diskette support"
+  - I/O Scheduler
+  - Max Sectors KB
+  - NCQ
+  - Runtime Power Management
 
 # 📖 Philosophy
 
