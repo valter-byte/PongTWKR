@@ -1,11 +1,6 @@
 # Roadmap for first semester of 2026:
 ## ROADMAP! TO 1.0 WE GO!
-- v0.8-PRE 📌 **Here we are.**
-- ## v0.8 — “Diskette support" 
-  - I/O Scheduler
-  - Max Sectors KB
-  - NCQ
-  - Runtime Power Management
+- v0.8 📌 **Here we are.**
 - ## v0.9 — “Kernel-ed”
   - Deeper tweaks in general.
 - ## v0.9.1 — “Foolproof - Part 2”
