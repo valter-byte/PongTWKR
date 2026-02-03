@@ -1,13 +1,15 @@
 # Roadmap for first semester of 2026:
 ## ROADMAP! TO 1.0 WE GO!
 - v0.8-PRE 📌 **Here we are.**
-- ## v0.8 — “Graphed” 
-  - GPU Tweaks & Probably drivers. <-- holy crap im scared af
-  - GPU Metrics & Info
+- ## v0.8 — “Diskette support" 
+  - I/O Scheduler
+  - Max Sectors KB
+  - NCQ
+  - Runtime Power Management
 - ## v0.9 — “Kernel-ed”
   - Deeper tweaks in general.
 - ## v0.9.1 — “Foolproof - Part 2”
-  - Extra security just in case you f*ck up the kernel, GPU, or whatever...
+  - Extra security just in case you f*ck up the kernel or whatever...
 - ## v0.9.2 - "Audio-ed"
    - I swear to god last update with the -ed format alr?
    - Small audio tweaks (buffers, latency, pulseaudio, etc.)
