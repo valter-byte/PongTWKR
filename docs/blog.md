@@ -1,3 +1,26 @@
+# Important news. | Entry 11 | February 3, 2026, 2:46 A.M.
+
+Hello. This is not my regular blog entry. Just hopped on to work on v0.8, and had to make a hard decision. You see, working with GPUs is NOT easy. I'm working **solo, without testers, without feedback, and without proper hardware (Integrated Intel HD Graphics)**. I'm not saying PongTWKR will never have GPU features: I'm delaying them to 1.1. v0.8 will now go focused on HDD/SDD tweaks.
+
+### Why?
+- No testers: Although I have already made the first features for AMD GPUs, I have **no testers.** Not a single one. So I don't want to keep working on GPU to:
+  - Release v0.8 without a single test
+  - Finding LOTS of bugs
+  - Having to stop development and bugfix it
+- No proper hardware: I'm working on a Intel HD Graphics. **I cannot even test it out myself.**
+- Immediate value for all users: GPU Tweaks are for most gamers, but HDD/SDD works for **everyone.**
+
+### How we are going to move now?
+
+Simply enough, v0.8 will just add SDD/HDD tweaks. I/O Schedulers, Readahead, etc. No break time, no new branch, nothing.
+
+If any of you guys reading this has tried PongTWKR or wants to help, **please open an issue. Even a regular user works. I just need you to tell me what you think of PongTWKR and what issues you had when using it.**
+
+With or without testers, PongTWKR will keep growing, but with testers, the pace will be much faster.
+
+See ya.
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
 # ENTRY 10 | February 2, 2026, 2:03 A.M.
 
 Hey there guys! I'm super sorry for not doing commits today. The truth is **I didn't even had time to open VSC**.
