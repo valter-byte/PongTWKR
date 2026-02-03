@@ -57,6 +57,14 @@
 - `sudo pongtwkr zramstreams <streams>`
 > Automatically capped to your CPU Thread count.
 ***Sets the ZRAM streams  to the designated value.***
+- `sudo pongtwkr scheduler <disk> <scheduler>`
+***Sets the designated scheduler to the designated disk***
+- `sudo pongtwkr ncq <value>`
+***Sets the NCQ to the designated value***
+- `sudo pongtwkr diskpowermode <true/false>`
+***Sets the Runtime Power Management ON/OFF***
+- `sudo pongtwkr maxsectors <size> (Size in M or K)`
+***Sets the Maximum Sectors to the designated size.***
 ## Misc.
 - `sudo pongtwkr info`
 **Shows a quick-info panel with a cool ASCII. Totally-self-produced idea... *cough* fastfetch but with other info... *cough* yeah..-**
