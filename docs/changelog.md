@@ -1,5 +1,14 @@
 # CHANGELOG 
 ## Here will go the changes added to the tweaker.
+# v0.8 "Diskette support"
+> Specially made for those with HDD in 2026 <3 (me)
+
+### New features
+- ***Added I/O Scheduler, Max Sectors, NCQ and Runtime Power Management tweaks***
+- ***Major bugfix***
+- ***Added Distro, Kernel and Desktop Enviroment to `sudo pongtwkr info`***
+- ***General tweaks to the code***
+
 # v0.8-PRE 
 > No more "script tweaker"
 
