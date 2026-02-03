@@ -1,3 +1,12 @@
+#   Entry 12 | February 4. 2026, 4:32 A.M.
+
+Just finished v0.8. Did some bugfix and yeah. Almost had a crashout at parse_size_2 because at first I forgot to add a "b" support or sum (if you wrote 16gb instead of 16g, you ended up with a awful error text) and then, because if value was a string it just returned it as int and made the script crash.
+
+I'm excited about v0.9. I'll try and add a kernel changer. I don't promise anything.
+
+See ya.
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
 # Important news. | Entry 11 | February 3, 2026, 2:46 A.M.
 
 Hello. This is not my regular blog entry. Just hopped on to work on v0.8, and had to make a hard decision. You see, working with GPUs is NOT easy. I'm working **solo, without testers, without feedback, and without proper hardware (Integrated Intel HD Graphics)**. I'm not saying PongTWKR will never have GPU features: I'm delaying them to 1.1. v0.8 will now go focused on HDD/SDD tweaks.
