@@ -1,8 +1,12 @@
 # Roadmap for first semester of 2026:
 ## ROADMAP! TO 1.0 WE GO!
 - v0.8 📌 **Here we are.**
-- ## v0.9 — “Kernel-ed”
-  - Deeper tweaks in general.
+## v0.9 "Chernobyl wasn't enough"
+  - Kernel changer (Reboot)
+  - Bootloader changer
+  - KERNEL Samepage Merging
+  - Kernel HOT SWAP (KEXEC)
+  - SCRAM Button in case of KEXEC Soft fail
 - ## v0.9.1 — “Foolproof - Part 2”
   - Extra security just in case you f*ck up the kernel or whatever...
 - ## v0.9.2 - "Audio-ed"
