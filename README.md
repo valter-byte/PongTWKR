@@ -22,12 +22,11 @@ The project is designed for users who want better performance and control but pr
 # 🚀 Roadmap
 # (GPU TWEAKS WERE DELAYED DUE TO LACK OF TESTERS.)
 
-## v0.8 "Diskette support"
-  - I/O Scheduler
-  - Max Sectors KB
-  - NCQ
-  - Runtime Power Management
-
+## v0.9 "Chernobyl wasn't enough"
+  - Kernel changer (Reboot)
+  - Bootloader changer
+  - KERNEL Samepage Merging
+  - Kernel HOT SWAP (KEXEC) 🔥🔥🔥🔥🔥🔥🔥 <--- for those who aren't scared of DEATH
 # 📖 Philosophy
 
 PongTWKR is built on five pillars:
