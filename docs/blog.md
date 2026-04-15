@@ -1,3 +1,18 @@
+# Entry 13 | April 15, 2026, 20:19
+
+WE. ARE. SO. BACK! 
+
+I'm sorry for just vanishing away. Thought PongTWKR was going to become another abandoned repo?
+
+## YOU WERE WRONG!
+
+Tomorrow I'll be releasing v0.9 with all those NUCLEAR changes promised. Not less. Not more.
+
+Just lots of things happened. Lots of work. Lots of other projects. Just, you know, life being life. After 2 months we are coming back with v0.9
+
+See ya soon.
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
 #   Entry 12 | February 4. 2026, 4:32 A.M.
 
 Just finished v0.8. Did some bugfix and yeah. Almost had a crashout at parse_size_2 because at first I forgot to add a "b" support or sum (if you wrote 16gb instead of 16g, you ended up with a awful error text) and then, because if value was a string it just returned it as int and made the script crash.
