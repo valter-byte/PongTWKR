@@ -1,3 +1,14 @@
+# Entry 14 | May 23, 2026, 12:57
+
+Yeah so... uhm. I lied to "you" or the 2 persons who have visited the  site. I didn't update PongTWKR because, you know, things. From now on, I'll be having an update schedule, every 15 days. At least I'll try.
+
+So, today/tomorrow v0.9 will be coming out. If   I'm in a good mood, even maybe v0.9.1 the following days.
+
+My objective is to get to v0.9.2 before 15th june. And v1.0.0, well, thats another whole thing.
+
+See ya soon!
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
 # Entry 13 | April 15, 2026, 20:19
 
 WE. ARE. SO. BACK! 
