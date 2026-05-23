@@ -1,3 +1,16 @@
+# Entry 15 | May 23. 2026, 18:39
+
+Hey! Howdy?
+
+Been working on v0.9. But, I was feeling kinda sick. I couldn't even get up bed.
+
+BUUUT, the work is done. I worked from my laptop while laying in bed. I just have to put everything together and do the push. Since I wasn't in the best conditions to properly debug the code, I'll mark this release as unstable or something.
+
+Tomorrow (or later today) I'll upload it and every doc.
+
+See ya!
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
 # Entry 14 | May 23, 2026, 12:57
 
 Yeah so... uhm. I lied to "you" or the 2 persons who have visited the  site. I didn't update PongTWKR because, you know, things. From now on, I'll be having an update schedule, every 15 days. At least I'll try.
