@@ -1,3 +1,38 @@
+# Entry 16 | May 24. 2026, 13:19
+
+Hey there.
+
+I'm still sick AF, couldn't even make the push. In fact, I didn't even got up of bed since yesterday. 38.5° fever, feeling cold as a polar bear, anyways.
+
+After having lunch I'll try and get up only to do the push and add lots of documentation.
+
+Organization first, I guess.
+
+I'm planning to re-estructure the entire repo: every .md, etc
+
+I'm also planning to change the update system:
+
+Yes, updates every 15 days, but with diff. tags.
+ v0.9.0.1
+
+First number: Major release (0)
+Second number: Release (9)
+Third number: Update
+Fourth number: Hotxix
+
+Ex:
+
+v0.9.0.1
+ │ │ │ └─ Hotfix
+ │ │ └─── Update
+ │ └───── Release
+ └─────── Major
+
+That being said, prolly in a couple hours v0.9.0.0 will be out, followed by v0.9.0.1, then v0.9.1.0.
+
+
+See ya!
+------------------------------------------------------------------------------------------------------------------------------------------------------
 # Entry 15 | May 23. 2026, 18:39
 
 Hey! Howdy?
