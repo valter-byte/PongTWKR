@@ -1,5 +1,14 @@
 # CHANGELOG 
 ## Here will go the changes added to the tweaker.
+# v0.9.0.0 "Chernobyl wasn't enough"
+> Sick dev + kernel tweaks while pc on + almost no revision, what could go wrong?
+
+- ***Added efistub installer***
+- ***Added kernel manager to change kernels easily***
+- ***Added KSM on/off switch***
+- ***Added kexec: swap kernels WITHOUT REBOOTING*** <- What could go wrong?
+> Spoiler: everything
+
 # v0.8 "Diskette support"
 > Specially made for those with HDD in 2026 <3 (me)
 
